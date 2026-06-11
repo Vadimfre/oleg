@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Пользователь велосипедист
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  favorites Favorite[]
+  ratings   Rating[]
+  comments  Comment[]
+}
+
+// Избранные маршруты
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  routeId   String   // slug маршрута (например, "august-canal")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, routeId])
+}
+
+// Рейтинги маршрутов
+model Rating {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  routeId   String   // slug маршрута
+  rating    Int      // 1-5 звезд
+  comment   String?  // Опциональный комментарий
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, routeId])
+}
+
+// Комментарии к маршрутам
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  routeId   String   // slug маршрута
+  text      String   // Текст комментария
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Велосипедные маршруты
+model Route {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique // Уникальный идентификатор для URL
+  title       String   // Название маршрута
+  description String   // Описание маршрута
+  difficulty  String   // easy, medium, hard
+  distance    Float    // Дистанция в км
+  duration    Float    // Длительность в часах
+  elevation   Int      // Перепад высот в метрах
+  coordinates String   // JSON: [[lat, lng], ...]
+  imageUrl    String   // URL изображения
+  highlights  String   // JSON массив достопримечательностей
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Подписка на email о новых маршрутах
+model EmailSubscriber {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  active     Boolean  @default(true)
+  unsubToken String   @unique
+  createdAt  DateTime @default(now())
+}
+
+// Web Push (браузер)
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
