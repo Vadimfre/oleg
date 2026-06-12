@@ -3,7 +3,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import { API_URL } from '@/shared/config/env'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -26,7 +26,7 @@ export function RouteNotificationsSubscribe() {
     setMsg(null)
     setBusy(true)
     try {
-      const res = await fetch(`${API}/notifications/email/subscribe`, {
+      const res = await fetch(`${API_URL}/notifications/email/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
@@ -56,7 +56,7 @@ export function RouteNotificationsSubscribe() {
     }
     setBusy(true)
     try {
-      const vRes = await fetch(`${API}/notifications/push/vapid-public`)
+      const vRes = await fetch(`${API_URL}/notifications/push/vapid-public`)
       const vJson = await vRes.json()
       if (!vJson?.publicKey) {
         setMsg('Push на сервере не настроен (VAPID ключи)')
@@ -78,7 +78,7 @@ export function RouteNotificationsSubscribe() {
         setMsg('Не удалось получить подписку')
         return
       }
-      const res = await fetch(`${API}/notifications/push/subscribe`, {
+      const res = await fetch(`${API_URL}/notifications/push/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

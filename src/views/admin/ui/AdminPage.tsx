@@ -28,7 +28,7 @@ const RouteBuilderMap = dynamic(
   },
 )
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import { API_URL } from '@/shared/config/env'
 const ADMIN_KEY_STORAGE = 'oleg_admin_api_key'
 
 const inputClass =
