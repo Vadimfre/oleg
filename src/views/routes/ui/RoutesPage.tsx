@@ -60,7 +60,7 @@ export function RoutesPage() {
               Кликни на любой маршрут, чтобы увидеть подробности
             </p>
           </div>
-          <div className="h-[500px]">
+          <div className="map-panel">
             <MapView />
           </div>
         </Card>

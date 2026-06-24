@@ -49,7 +49,7 @@ export function RegisterPage() {
           <div className="space-y-8">
             <div>
               <p className="text-sm text-gray-400 uppercase tracking-wide mb-6">[создай аккаунт]</p>
-              <h1 className="text-[64px] lg:text-[64px] font-black text-gray-900 uppercase leading-[0.95] tracking-tight mb-6">
+              <h1 className="heading-page text-gray-900 uppercase leading-[0.95] tracking-tight mb-6">
                 НАЧНИ СВОЁ ВЕЛОПУТЕШЕСТВИЕ
               </h1>
               <p className="text-base text-gray-600 leading-relaxed max-w-md">

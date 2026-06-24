@@ -128,6 +128,35 @@ body {
   .heading-display {
     @apply font-black text-gray-900 uppercase leading-[0.95] tracking-tight;
   }
+
+  .heading-hero {
+    @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight;
+  }
+
+  .heading-page {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[0.95] tracking-tight;
+  }
+
+  .heading-section {
+    @apply text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight;
+  }
+
+  .text-stat-lg {
+    @apply text-4xl sm:text-5xl md:text-6xl font-black leading-none;
+  }
+
+  .map-panel {
+    @apply h-[min(52vh,360px)] sm:h-[min(58vh,480px)] lg:h-[600px];
+  }
+
+  .mobile-scroll-tabs {
+    @apply flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-scroll-tabs > * {
+    @apply snap-start shrink-0;
+  }
 }
 
 @layer utilities {

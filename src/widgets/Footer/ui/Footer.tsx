@@ -10,11 +10,12 @@ const links = [
   { href: '/stats', label: 'Аналитика' },
   { href: '/compare', label: 'Сравнение' },
   { href: '/about', label: 'О нас' },
+  { href: '/admin', label: 'Админ' },
 ]
 
 export function Footer() {
   return (
-    <footer className="relative mt-24 overflow-hidden">
+    <footer className="relative mt-12 sm:mt-24 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-dark-900/5 to-dark-900 pointer-events-none" />
       <div className="relative bg-dark-900 text-white">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />

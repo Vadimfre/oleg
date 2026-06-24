@@ -1,6 +1,6 @@
 import { RegisterData, LoginData, AuthResponse, User } from './types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import { API_URL } from '@/shared/config/env'
 
 // Регистрация
 export async function register(data: RegisterData): Promise<AuthResponse> {

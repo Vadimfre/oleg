@@ -250,8 +250,8 @@ export function ProfilePage() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center text-white font-black text-3xl">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-900 flex items-center justify-center text-white font-black text-2xl sm:text-3xl shrink-0">
                 {user?.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
@@ -260,7 +260,7 @@ export function ProfilePage() {
                 </h1>
                 <p className="text-gray-600">{user?.email}</p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:ml-auto">
                 <button
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 border border-gray-200 text-gray-700 font-semibold rounded-[8px] hover:bg-gray-50 transition-colors flex items-center gap-2"

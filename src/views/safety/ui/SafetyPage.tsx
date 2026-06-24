@@ -18,7 +18,7 @@ export function SafetyPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
-            <h1 className="text-[64px] font-black uppercase tracking-tight leading-none mb-6">
+            <h1 className="heading-hero uppercase tracking-tight leading-none mb-6">
               Безопасность<br />и качество
             </h1>
             <p className="text-xl text-green-100 max-w-2xl mx-auto">
@@ -31,7 +31,7 @@ export function SafetyPage() {
       {/* Safety Rules Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight text-center mb-16">
+          <h2 className="heading-section text-gray-900 text-center mb-8 sm:mb-16">
             Правила безопасности
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -138,7 +138,7 @@ export function SafetyPage() {
               </div>
             </div>
             <div>
-              <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight mb-6">
+              <h2 className="heading-section text-gray-900 mb-6">
                 Качество маршрутов
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
@@ -179,7 +179,7 @@ export function SafetyPage() {
       <section className="py-20 bg-red-50">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight mb-4">
+            <h2 className="heading-section text-gray-900 mb-4">
               Экстренные контакты
             </h2>
             <p className="text-lg text-gray-600">
@@ -224,7 +224,7 @@ export function SafetyPage() {
       {/* CTA Section */}
       <section className="py-20 bg-gray-900 text-white">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-[42px] font-black uppercase tracking-tight mb-6">
+          <h2 className="heading-section uppercase tracking-tight mb-6">
             Безопасной дороги!
           </h2>
           <p className="text-xl text-gray-300 mb-10">

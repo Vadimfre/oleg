@@ -40,7 +40,7 @@ export function LoginPage() {
           <div className="space-y-8">
             <div>
               <p className="text-sm text-gray-400 uppercase tracking-wide mb-6">[добро пожаловать]</p>
-              <h1 className="text-[64px] lg:text-[80px] font-black text-gray-900 uppercase leading-[0.95] tracking-tight mb-6">
+              <h1 className="heading-page text-gray-900 uppercase leading-[0.95] tracking-tight mb-6">
                 ПРОДОЛЖИ
                 <br />
                 СВОЁ

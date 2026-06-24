@@ -50,7 +50,7 @@ function CountUp({ end, duration = 2000, suffix = '' }: { end: number; duration?
   }, [end, duration, hasAnimated])
 
   return (
-    <div ref={elementRef} className="text-[120px] font-black text-gray-900 uppercase leading-none tracking-tighter mb-4">
+    <div ref={elementRef} className="text-stat-lg text-gray-900 uppercase leading-none tracking-tighter mb-4">
       {count}{suffix}
     </div>
   )
@@ -138,7 +138,7 @@ export function HomePage() {
 
             {/* Правая часть - большой заголовок */}
             <div className="lg:col-span-9">
-              <h2 className="text-[64px] lg:text-[80px] font-black text-gray-900 uppercase leading-[0.95] tracking-tight mb-12">
+              <h2 className="heading-page text-gray-900 mb-12">
                 О НАШЕМ<br />СЕРВИСЕ
               </h2>
 
@@ -203,7 +203,7 @@ export function HomePage() {
 
               {/* Правая часть - большой заголовок */}
               <div className="lg:col-span-9">
-                <h2 className="text-[64px] lg:text-[80px] font-black text-gray-900 uppercase leading-[0.95] tracking-tight mb-8">
+                <h2 className="heading-page text-gray-900 mb-8">
                   ОСНОВА ВАШЕЙ<br />
                   БЕЗОПАСНОЙ<br />
                   ВЕЛОПРОГУЛКИ

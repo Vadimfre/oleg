@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <Header />
-          <main className="pt-24 min-h-screen">
+          <main className="pt-20 sm:pt-24 min-h-screen">
             {children}
           </main>
           <Footer />

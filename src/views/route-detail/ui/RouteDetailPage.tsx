@@ -231,7 +231,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
 
         {/* Хедер с названием */}
         <div className="mb-8">
-          <h1 className="text-[42px] font-black text-gray-900 uppercase tracking-tight mb-3">
+          <h1 className="heading-page text-gray-900 uppercase tracking-tight mb-3">
             {route.title}
           </h1>
           <p className="text-[15px] text-gray-600 max-w-2xl">
@@ -255,7 +255,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Дистанция</span>
             </div>
             <div className="flex items-end gap-3">
-              <span className="text-[64px] font-black text-gray-900 leading-none">{route.distance}</span>
+              <span className="text-stat-lg text-gray-900">{route.distance}</span>
               <span className="text-2xl font-bold text-gray-500 mb-3">км</span>
             </div>
           </div>
@@ -271,13 +271,13 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
             <div className="flex items-end gap-3 mb-3">
               {hours > 0 && (
                 <div className="flex items-end gap-2">
-                  <span className="text-[64px] font-black text-gray-900 leading-none">{hours}</span>
+                  <span className="text-stat-lg text-gray-900">{hours}</span>
                   <span className="text-2xl font-bold text-gray-500 mb-3">ч</span>
                 </div>
               )}
               {minutes > 0 && (
                 <div className="flex items-end gap-2">
-                  <span className="text-[64px] font-black text-gray-900 leading-none">{minutes}</span>
+                  <span className="text-stat-lg text-gray-900">{minutes}</span>
                   <span className="text-2xl font-bold text-gray-500 mb-3">м</span>
                 </div>
               )}
@@ -296,7 +296,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Перепад высот</span>
             </div>
             <div className="flex items-end gap-3">
-              <span className="text-[64px] font-black text-gray-900 leading-none">{route.elevation}</span>
+              <span className="text-stat-lg text-gray-900">{route.elevation}</span>
               <span className="text-2xl font-bold text-gray-500 mb-3">м</span>
             </div>
           </div>
@@ -306,7 +306,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
         <div className="grid grid-cols-1 gap-4 mb-4">
           {/* Rating Card */}
           <div className="bg-white rounded-[12px] border border-gray-100 p-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-6">
                 <div>
                   <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Рейтинг</div>
@@ -431,7 +431,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
           </h2>
           
           {/* Слайдер с картинками */}
-          <div className="relative mb-8 rounded-[12px] overflow-hidden h-[400px]">
+          <div className="relative mb-8 rounded-[12px] overflow-hidden h-[min(50vh,280px)] sm:h-[400px]">
             {sliderImages.map((img, index) => (
               <div
                 key={index}

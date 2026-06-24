@@ -44,7 +44,7 @@ export function WeatherHub() {
           <div className="absolute right-4 top-4 text-8xl opacity-20">{sl.emoji}</div>
           <p className="text-sm uppercase tracking-widest opacity-80 mb-2">Индекс комфорта</p>
           <div className="flex items-end gap-4">
-            <span className="text-[80px] font-black leading-none tabular-nums">
+            <span className="text-5xl sm:text-6xl md:text-7xl font-black leading-none tabular-nums">
               {weather.cyclingScore}
             </span>
             <span className="text-2xl font-bold pb-4">/ 100</span>

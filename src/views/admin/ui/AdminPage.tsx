@@ -303,7 +303,7 @@ export function AdminPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="mobile-scroll-tabs">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -344,7 +344,7 @@ export function AdminPage() {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label style={labelStyle}>Сложность</label>
                     <select
@@ -389,7 +389,7 @@ export function AdminPage() {
             </Card>
           </div>
           <div className="lg:col-span-2 space-y-4">
-            <div className="h-[600px]">
+            <div className="map-panel">
               <RouteBuilderMap onRouteChange={handleRouteChange} />
             </div>
             <Card hover={false}>

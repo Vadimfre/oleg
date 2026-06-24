@@ -52,7 +52,7 @@ export function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-purple-600/20" />
         <div className="container mx-auto px-4 max-w-6xl relative z-10">
           <div className="text-center">
-            <h1 className="text-[72px] font-black uppercase tracking-tight leading-none mb-6">
+            <h1 className="heading-hero uppercase tracking-tight leading-none mb-6">
               О нашем<br />сервисе
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -68,25 +68,25 @@ export function AboutPage() {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-[56px] font-black text-gray-900 leading-none mb-2">
+              <div className="text-4xl sm:text-5xl font-black text-gray-900 leading-none mb-2">
                 <CountUp end={6} suffix="+" />
               </div>
               <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Маршрутов</p>
             </div>
             <div className="text-center">
-              <div className="text-[56px] font-black text-gray-900 leading-none mb-2">
+              <div className="text-4xl sm:text-5xl font-black text-gray-900 leading-none mb-2">
                 <CountUp end={500} suffix="+" />
               </div>
               <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Километров</p>
             </div>
             <div className="text-center">
-              <div className="text-[56px] font-black text-gray-900 leading-none mb-2">
+              <div className="text-4xl sm:text-5xl font-black text-gray-900 leading-none mb-2">
                 <CountUp end={2025} />
               </div>
               <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Год основания</p>
             </div>
             <div className="text-center">
-              <div className="text-[56px] font-black text-gray-900 leading-none mb-2">
+              <div className="text-4xl sm:text-5xl font-black text-gray-900 leading-none mb-2">
                 <CountUp end={100} suffix="%" />
               </div>
               <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold">Бесплатно</p>
@@ -100,7 +100,7 @@ export function AboutPage() {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight mb-6">
+              <h2 className="heading-section text-gray-900 mb-6">
                 Наша миссия
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
@@ -140,7 +140,7 @@ export function AboutPage() {
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 max-w-6xl">
-          <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight text-center mb-16">
+          <h2 className="heading-section text-gray-900 text-center mb-8 sm:mb-16">
             Почему BikeRoute?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -184,7 +184,7 @@ export function AboutPage() {
       {/* CTA Section */}
       <section className="py-20 bg-gray-900 text-white">
         <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-[42px] font-black uppercase tracking-tight mb-6">
+          <h2 className="heading-section uppercase tracking-tight mb-6">
             Готовы начать?
           </h2>
           <p className="text-xl text-gray-300 mb-10">

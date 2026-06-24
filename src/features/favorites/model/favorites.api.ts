@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+import { API_URL } from '@/shared/config/env'
 
 // Добавить маршрут в избранное
 export async function addToFavorites(routeId: string): Promise<{ message: string }> {

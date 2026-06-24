@@ -127,12 +127,12 @@ export function CreateRoutePage() {
 
         {/* Map */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="h-[600px]">
+          <div className="map-panel">
             <RouteBuilderMap onRouteChange={handleRouteChange} />
           </div>
           
           <Card hover={false}>
-            <div className="grid grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-primary mb-1">
                   {distance.toFixed(1)} км
