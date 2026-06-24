@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { parseTrackFile, type ParsedTrack } from '@/shared/utils/trackParser'
 import { fixLeafletIcons } from '@/shared/lib/map/leaflet-utils'
+import { serializeCoordinates } from '@/shared/lib/route/resolveRouteTrack'
 import { grodnoRoutes } from '@/shared/data/grodnoRoutes'
 import { RoutePolyline } from '@/widgets/MapView/ui/RoutePolyline'
 
@@ -61,59 +62,69 @@ export function StaticRouteMap({
   coordinates = [],
   showGrodnoRoutes = true,
 }: StaticRouteMapProps) {
+  const coordsKey = serializeCoordinates(coordinates)
+  const routeKey = `${gpxFile ?? ''}|${coordsKey}`
+
   const [gpxTrack, setGpxTrack] = useState<ParsedTrack | null>(null)
+  const [mapView, setMapView] = useState<{
+    center: [number, number]
+    zoom: number
+  }>({ center: [53.6693, 23.8131], zoom: 13 })
   const [isLoading, setIsLoading] = useState(true)
-  const [mapCenter, setMapCenter] = useState<[number, number]>([53.6693, 23.8131])
-  const [mapZoom, setMapZoom] = useState(13)
+  const [mapReadyKey, setMapReadyKey] = useState('')
 
   useEffect(() => {
     fixLeafletIcons()
   }, [])
 
   useEffect(() => {
-    const coordTrack = trackFromCoordinates(coordinates)
-    if (!gpxFile?.trim()) {
-      if (coordTrack) {
-        setGpxTrack(coordTrack)
-        setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
-        setMapZoom(13)
+    let cancelled = false
+
+    const load = async () => {
+      setIsLoading(true)
+      setMapReadyKey('')
+
+      const coordTrack = trackFromCoordinates(coordinates)
+      let parsed: ParsedTrack | null = null
+
+      if (gpxFile?.trim()) {
+        try {
+          const response = await fetch(gpxFile)
+          if (response.ok) {
+            const gpxText = await response.text()
+            parsed = parseTrackFile(gpxText, gpxFile.split('/').pop())
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки GPX файла:', error)
+        }
       }
+
+      if (!parsed?.points.length && coordTrack) {
+        parsed = coordTrack
+      }
+
+      if (cancelled) return
+
+      setGpxTrack(parsed)
+      if (parsed?.points.length) {
+        setMapView({
+          center: [parsed.points[0].lat, parsed.points[0].lng],
+          zoom:
+            parsed.distance > 50 ? 11 : parsed.distance > 20 ? 12 : 13,
+        })
+      } else {
+        setMapView({ center: [53.6693, 23.8131], zoom: 13 })
+      }
+      setMapReadyKey(routeKey)
       setIsLoading(false)
-      return
     }
 
-    const loadGPX = async () => {
-      try {
-        setIsLoading(true)
-        const response = await fetch(gpxFile)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const gpxText = await response.text()
-        const track = parseTrackFile(gpxText, gpxFile.split('/').pop())
+    load()
 
-        if (track && track.points.length > 0) {
-          setGpxTrack(track)
-          setMapCenter([track.points[0].lat, track.points[0].lng])
-          if (track.distance > 50) setMapZoom(11)
-          else if (track.distance > 20) setMapZoom(12)
-          else setMapZoom(13)
-        } else if (coordTrack) {
-          setGpxTrack(coordTrack)
-          setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
-          setMapZoom(13)
-        }
-      } catch (error) {
-        console.error('Ошибка загрузки GPX файла:', error)
-        if (coordTrack) {
-          setGpxTrack(coordTrack)
-          setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
-        }
-      } finally {
-        setIsLoading(false)
-      }
+    return () => {
+      cancelled = true
     }
-
-    loadGPX()
-  }, [gpxFile, coordinates])
+  }, [gpxFile, coordsKey])
 
   return (
     <div className="w-full h-full rounded-3xl overflow-hidden shadow-soft relative min-h-[320px]">
@@ -126,13 +137,15 @@ export function StaticRouteMap({
         </div>
       )}
 
-      <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
-        className="w-full h-full"
-        style={{ height: '100%', minHeight: '320px' }}
-        zoomControl={true}
-      >
+      {!isLoading && mapReadyKey && (
+        <MapContainer
+          key={mapReadyKey}
+          center={mapView.center}
+          zoom={mapView.zoom}
+          className="w-full h-full"
+          style={{ height: '100%', minHeight: '320px' }}
+          zoomControl={true}
+        >
         <LayersControl position="topright">
           {/* Обычная карта OpenStreetMap */}
           <LayersControl.BaseLayer checked name="🗺️ Стандартная">
@@ -210,7 +223,8 @@ export function StaticRouteMap({
             />
           </>
         )}
-      </MapContainer>
+        </MapContainer>
+      )}
     </div>
   )
 }

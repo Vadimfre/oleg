@@ -1,13 +1,24 @@
-import { ROUTES_DATA } from '@/entities/route/model/constants'
+/**
+ * Каноническое соответствие slug → файл трека в public/gpx/
+ * (источник истины для отображения на карте)
+ */
+export const ROUTE_TRACK_BY_SLUG: Record<string, string> = {
+  'avgustovsci-kanal': '/gpx/avgust-velo.kml',
+  pyshki: '/gpx/pyshki.gpx',
+  'grodno-losevo': '/gpx/grodno-losevo.gpx',
+  'grodno-minsk': '/gpx/grodno-minsk.gpx',
+  'dlinnyj-marshrut': '/gpx/Long-bike.gpx',
+  pokatushka: '/gpx/pokatushka.gpx',
+}
 
-/** GPX/KML путь: из API или fallback по slug из локальных данных */
+/** GPX/KML путь: сначала канонический по slug, затем из API */
 export function resolveRouteGpxFile(
   route: { slug: string; gpxFile?: string | null },
 ): string | undefined {
+  const canonical = ROUTE_TRACK_BY_SLUG[route.slug]
+  if (canonical) return canonical
   const fromApi = route.gpxFile?.trim()
-  if (fromApi) return fromApi
-  const local = ROUTES_DATA.find((r) => r.slug === route.slug)
-  return local?.gpxFile || undefined
+  return fromApi || undefined
 }
 
 /** Координаты из API (JSON [[lat,lng],...]) */
@@ -30,4 +41,9 @@ export function parseRouteCoordinates(
   } catch {
     return []
   }
+}
+
+export function serializeCoordinates(coords: [number, number][]): string {
+  if (!coords.length) return ''
+  return coords.map((c) => `${c[0]},${c[1]}`).join(';')
 }
