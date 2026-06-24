@@ -2,11 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // CORS для фронтенда
+  app.useStaticAssets(join(process.cwd(), 'upload'), { prefix: '/upload' });
+
   app.enableCors({
     origin: [
       process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -15,13 +18,11 @@ async function bootstrap() {
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key'],
   });
 
-  // Cookie parser
   app.use(cookieParser());
 
-  // Глобальная валидация
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -29,10 +30,9 @@ async function bootstrap() {
     }),
   );
 
-  // Запуск сервера
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  
+
   console.log(`🚴 BikeRoutes Backend is running on http://localhost:${port}`);
 }
 

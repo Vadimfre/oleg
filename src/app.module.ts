@@ -9,6 +9,8 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { CommentsModule } from './comments/comments.module';
 import { RidesModule } from './rides/rides.module';
+import { AdminModule } from './admin/admin.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { RidesModule } from './rides/rides.module';
     RatingsModule,
     CommentsModule,
     RidesModule,
+    NotificationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
