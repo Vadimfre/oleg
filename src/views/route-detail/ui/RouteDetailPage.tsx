@@ -61,8 +61,8 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
       ],
       'grodno-losevo': [
         '/images/routes/grodno-losevo.png',
-        'http://grodno.gov.by/sm_full.aspx?guid=96763',
-        'http://grodno.gov.by/sm_full.aspx?guid=96743',
+        '/images/routes/grodno-losevo/slide-1.png',
+        '/images/routes/grodno-losevo/slide-2.png',
       ],
       'grodno-minsk': [
         '/images/routes/grodno-minsk.png',
