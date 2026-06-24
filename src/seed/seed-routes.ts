@@ -9,7 +9,7 @@ const DEMO_USER = {
 };
 
 /** Устаревшие slug — удаляем при каждом seed (замена в БД) */
-const OBSOLETE_ROUTE_SLUGS = ['lestnica-v-nebo'];
+const OBSOLETE_ROUTE_SLUGS = ['lestnica-v-nebo', 'pokatushka'];
 
 const ROUTES_SEED_DATA = [
   {
@@ -108,22 +108,22 @@ const ROUTES_SEED_DATA = [
     ]),
   },
   {
-    slug: 'pokatushka',
-    title: 'Покатушка',
+    slug: 'grodno-korobchitsy',
+    title: 'Гродно — Коробчицы',
     description:
-      'Лёгкий развлекательный маршрут для вечерних прогулок и семейных поездок. Проходит по живописным окраинам Гродно, парковым зонам и набережным. Идеален для новичков и детей.',
+      'Кольцевой маршрут из Гродно к агротуристическому комплексу «Коробчицы». Гравий и грунт через лесные массивы, поля и берега водоёмов. Подходит для новичков и семейных поездок с детским креслом или трейлер-коляской. Горный, городской и гравийный велосипед.',
     difficulty: 'easy',
-    distance: 15,
-    duration: 1.5,
-    elevation: 40,
-    gpxFile: '/gpx/pokatushka.gpx',
-    imageUrl: '/images/routes/pokatushka.png',
+    distance: 27,
+    duration: 2.5,
+    elevation: 159,
+    gpxFile: '/gpx/grodno-korobchitsy.gpx',
+    imageUrl: '/images/routes/grodno-korobchitsy.png',
     highlights: JSON.stringify([
-      'Городские парки',
-      'Набережная Немана',
-      'Зелёные зоны',
-      'Безопасные велодорожки',
-      'Места для отдыха',
+      'Дикая природа и лесные массивы',
+      'Озёра и водоёмы по пути',
+      'Агрокомплекс «Коробчицы»',
+      'Тренировочный круговой маршрут',
+      'Подходит для поездок с детьми',
     ]),
   },
 ];
@@ -146,10 +146,10 @@ async function seedDemoUser(prisma: PrismaClient) {
 
   await prisma.favorite.upsert({
     where: {
-      userId_routeId: { userId: user.id, routeId: 'pokatushka' },
+      userId_routeId: { userId: user.id, routeId: 'grodno-korobchitsy' },
     },
     update: {},
-    create: { userId: user.id, routeId: 'pokatushka' },
+    create: { userId: user.id, routeId: 'grodno-korobchitsy' },
   });
 
   console.log(`✅ Демо-аккаунт: ${DEMO_USER.email} / ${DEMO_USER.password}`);
