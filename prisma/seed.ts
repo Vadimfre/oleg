@@ -162,10 +162,22 @@ async function main() {
   console.log('✅ Старые маршруты удалены');
 
   for (const route of ROUTES_SEED_DATA) {
-    await prisma.route.create({
-      data: route,
+    await prisma.route.upsert({
+      where: { slug: route.slug },
+      update: {
+        title: route.title,
+        description: route.description,
+        difficulty: route.difficulty,
+        distance: route.distance,
+        duration: route.duration,
+        elevation: route.elevation,
+        gpxFile: route.gpxFile,
+        imageUrl: route.imageUrl,
+        highlights: route.highlights,
+      },
+      create: route,
     });
-    console.log(`✅ Добавлен маршрут: ${route.title}`);
+    console.log(`✅ Маршрут: ${route.title}`);
   }
 
   console.log('🎉 Seed завершен успешно!');
