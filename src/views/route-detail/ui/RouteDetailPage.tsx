@@ -77,6 +77,9 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
       ],
       'grodno-korobchitsy': [
         '/images/routes/grodno-korobchitsy.png',
+        '/images/routes/grodno-korobchitsy/slide-1.png',
+        '/images/routes/grodno-korobchitsy/slide-2.png',
+        '/images/routes/grodno-korobchitsy/slide-3.png',
       ],
     }
 
