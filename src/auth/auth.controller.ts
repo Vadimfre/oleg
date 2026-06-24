@@ -15,7 +15,6 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { getAuthCookieOptions } from './cookie.util';
 
 @Controller('auth')
 export class AuthController {
@@ -28,7 +27,13 @@ export class AuthController {
   ) {
     const result = await this.authService.register(dto);
     
-    res.cookie('token', result.token, getAuthCookieOptions());
+    // Устанавливаем cookie с токеном
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+    });
 
     return res.json({
       message: result.message,
@@ -43,7 +48,13 @@ export class AuthController {
   ) {
     const result = await this.authService.login(dto);
     
-    res.cookie('token', result.token, getAuthCookieOptions());
+    // Устанавливаем cookie с токеном
+    res.cookie('token', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+    });
 
     return res.json({
       message: result.message,
@@ -53,12 +64,7 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res() res: ExpressResponse) {
-    const c = getAuthCookieOptions();
-    res.clearCookie('token', {
-      path: c.path,
-      sameSite: c.sameSite,
-      secure: c.secure,
-    });
+    res.clearCookie('token');
     return res.json({ message: 'Выход выполнен успешно' });
   }
 

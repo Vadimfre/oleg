@@ -12,12 +12,8 @@ export class RoutesController {
   constructor(private readonly routesService: RoutesService) {}
 
   @Get()
-  async findAll(
-    @Query('difficulty') difficulty?: string,
-    @Query('q') q?: string,
-    @Query('sort') sort?: string,
-  ) {
-    return this.routesService.findAll(difficulty, q, sort);
+  async findAll(@Query('difficulty') difficulty?: string) {
+    return this.routesService.findAll(difficulty);
   }
 
   @Get('slug/:slug')

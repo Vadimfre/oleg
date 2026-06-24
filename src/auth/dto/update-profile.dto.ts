@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, IsEmail } from 'class-validator';
+import { IsString, IsOptional, MinLength, IsEmail, IsNumber, Min, Max } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -9,4 +9,10 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsEmail({}, { message: 'Некорректный email' })
   email?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(10)
+  @Max(500)
+  monthlyGoalKm?: number;
 }

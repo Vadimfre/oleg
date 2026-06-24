@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -12,12 +12,14 @@ model User {
   id        Int        @id @default(autoincrement())
   email     String     @unique
   password  String
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  name          String
+  monthlyGoalKm Float      @default(80)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   favorites Favorite[]
   ratings   Rating[]
   comments  Comment[]
+  rides     Ride[]
 }
 
 // Избранные маршруты
@@ -66,27 +68,32 @@ model Route {
   distance    Float    // Дистанция в км
   duration    Float    // Длительность в часах
   elevation   Int      // Перепад высот в метрах
-  coordinates String   // JSON: [[lat, lng], ...]
+  gpxFile     String   // Путь к GPX файлу
   imageUrl    String   // URL изображения
   highlights  String   // JSON массив достопримечательностей
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// Подписка на email о новых маршрутах
-model EmailSubscriber {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
-  active     Boolean  @default(true)
-  unsubToken String   @unique
-  createdAt  DateTime @default(now())
-}
+// Записанная поездка / тренировка с GPS
+model Ride {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  routeSlug         String?
+  routeTitle        String
+  status            String    @default("active") // active | completed | cancelled
+  startedAt         DateTime  @default(now())
+  endedAt           DateTime?
+  elapsedSec        Int       @default(0)
+  movingSec         Int       @default(0)
+  distanceKm        Float     @default(0)
+  avgSpeedKmh       Float?
+  maxSpeedKmh       Float?
+  avgPaceMinPerKm   Float?
+  maxOffRouteKm     Float     @default(0)
+  routeCompletion   Float?
+  trackPoints       String    @default("[]")
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// Web Push (браузер)
-model PushSubscription {
-  id        Int      @id @default(autoincrement())
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
+  @@index([userId, startedAt])
 }
