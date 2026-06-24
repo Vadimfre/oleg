@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -13,6 +13,7 @@ import 'leaflet/dist/leaflet.css'
 import { fixLeafletIcons, GRODNO_CENTER } from '@/shared/lib/map/leaflet-utils'
 import { parseTrackFile, type ParsedTrack } from '@/shared/utils/trackParser'
 import { formatDistance } from '@/shared/lib/map/geo-utils'
+import { serializeCoordinates } from '@/shared/lib/route/resolveRouteTrack'
 
 interface LiveNavigationMapProps {
   gpxFile?: string
@@ -47,15 +48,16 @@ export function LiveNavigationMap({
   coordinates = [],
   className = 'w-full h-full',
 }: LiveNavigationMapProps) {
-  const [track, setTrack] = useState<ParsedTrack | null>(null)
-  const [isLoadingTrack, setIsLoadingTrack] = useState(true)
-  const [mapCenter, setMapCenter] = useState<[number, number]>(GRODNO_CENTER)
-  const [mapZoom, setMapZoom] = useState(13)
+  const coordsKey = serializeCoordinates(coordinates)
+  const routeKey = `${gpxFile ?? ''}|${coordsKey}`
 
-  const coordTrack = useMemo(
-    () => trackFromCoordinates(coordinates),
-    [coordinates],
-  )
+  const [track, setTrack] = useState<ParsedTrack | null>(null)
+  const [mapView, setMapView] = useState<{
+    center: [number, number]
+    zoom: number
+  }>({ center: GRODNO_CENTER, zoom: 13 })
+  const [isLoadingTrack, setIsLoadingTrack] = useState(true)
+  const [mapReadyKey, setMapReadyKey] = useState('')
 
   useEffect(() => {
     fixLeafletIcons()
@@ -64,35 +66,43 @@ export function LiveNavigationMap({
   useEffect(() => {
     let cancelled = false
 
-    const applyTrack = (parsed: ParsedTrack | null) => {
-      if (cancelled) return
-      setTrack(parsed)
-      if (parsed?.points.length) {
-        setMapCenter([parsed.points[0].lat, parsed.points[0].lng])
-        setMapZoom(parsed.distance > 50 ? 11 : parsed.distance > 20 ? 12 : 13)
-      }
-      setIsLoadingTrack(false)
-    }
-
     const load = async () => {
       setIsLoadingTrack(true)
+      setMapReadyKey('')
+
+      let parsed: ParsedTrack | null = null
 
       if (gpxFile?.trim()) {
         try {
           const res = await fetch(gpxFile)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const text = await res.text()
-          const parsed = parseTrackFile(text, gpxFile.split('/').pop())
-          if (parsed?.points.length) {
-            applyTrack(parsed)
-            return
+          if (res.ok) {
+            const text = await res.text()
+            parsed = parseTrackFile(text, gpxFile.split('/').pop())
           }
         } catch (e) {
           console.error('Ошибка загрузки трека:', e)
         }
       }
 
-      applyTrack(coordTrack)
+      if (!parsed?.points.length && coordinates.length >= 2) {
+        parsed = trackFromCoordinates(coordinates)
+      }
+
+      if (cancelled) return
+
+      setTrack(parsed)
+
+      if (parsed?.points.length) {
+        setMapView({
+          center: [parsed.points[0].lat, parsed.points[0].lng],
+          zoom: parsed.distance > 50 ? 11 : parsed.distance > 20 ? 12 : 13,
+        })
+      } else {
+        setMapView({ center: GRODNO_CENTER, zoom: 13 })
+      }
+
+      setMapReadyKey(routeKey)
+      setIsLoadingTrack(false)
     }
 
     load()
@@ -100,7 +110,7 @@ export function LiveNavigationMap({
     return () => {
       cancelled = true
     }
-  }, [gpxFile, coordTrack])
+  }, [gpxFile, coordsKey])
 
   const hasTrack = track && track.points.length > 0
 
@@ -121,7 +131,7 @@ export function LiveNavigationMap({
       {!isLoadingTrack && !hasTrack && (
         <div className="absolute inset-0 z-[1000] bg-gray-50 flex items-center justify-center px-6 text-center">
           <p className="text-gray-500 text-sm">
-            Трек маршрута не найден. Проверьте GPX-файл или координаты в админке.
+            Трек маршрута не найден. Проверьте файл в public/gpx/.
           </p>
         </div>
       )}
@@ -134,59 +144,62 @@ export function LiveNavigationMap({
         </div>
       )}
 
-      <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
-        className="w-full h-full"
-        style={{ height: '100%', minHeight: '320px' }}
-      >
-        <LayersControl position="topright">
-          <LayersControl.BaseLayer checked name="Стандартная">
-            <TileLayer
-              attribution="&copy; OpenStreetMap"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Велопути">
-            <TileLayer
-              attribution="&copy; OpenStreetMap"
-              url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+      {!isLoadingTrack && mapReadyKey && (
+        <MapContainer
+          key={mapReadyKey}
+          center={mapView.center}
+          zoom={mapView.zoom}
+          className="w-full h-full"
+          style={{ height: '100%', minHeight: '320px' }}
+        >
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Стандартная">
+              <TileLayer
+                attribution="&copy; OpenStreetMap"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Велопути">
+              <TileLayer
+                attribution="&copy; OpenStreetMap"
+                url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
 
-        {hasTrack && (
-          <>
-            <Polyline
-              positions={track.points.map((p) => [p.lat, p.lng] as [number, number])}
-              color="#ef4444"
-              weight={5}
-              opacity={0.9}
-            />
-            <Marker
-              position={[track.points[0].lat, track.points[0].lng]}
-              icon={L.divIcon({
-                className: '',
-                html: '<div style="background:#10b981;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid white">A</div>',
-                iconSize: [28, 28],
-                iconAnchor: [14, 14],
-              })}
-            />
-            <Marker
-              position={[
-                track.points[track.points.length - 1].lat,
-                track.points[track.points.length - 1].lng,
-              ]}
-              icon={L.divIcon({
-                className: '',
-                html: '<div style="background:#ef4444;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid white">B</div>',
-                iconSize: [28, 28],
-                iconAnchor: [14, 14],
-              })}
-            />
-          </>
-        )}
-      </MapContainer>
+          {hasTrack && (
+            <>
+              <Polyline
+                positions={track.points.map((p) => [p.lat, p.lng] as [number, number])}
+                color="#ef4444"
+                weight={5}
+                opacity={0.9}
+              />
+              <Marker
+                position={[track.points[0].lat, track.points[0].lng]}
+                icon={L.divIcon({
+                  className: '',
+                  html: '<div style="background:#10b981;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid white">A</div>',
+                  iconSize: [28, 28],
+                  iconAnchor: [14, 14],
+                })}
+              />
+              <Marker
+                position={[
+                  track.points[track.points.length - 1].lat,
+                  track.points[track.points.length - 1].lng,
+                ]}
+                icon={L.divIcon({
+                  className: '',
+                  html: '<div style="background:#ef4444;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid white">B</div>',
+                  iconSize: [28, 28],
+                  iconAnchor: [14, 14],
+                })}
+              />
+            </>
+          )}
+        </MapContainer>
+      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -36,10 +36,15 @@ function NavigatePageContent() {
   }, [slugFromUrl])
 
   const selectedRoute = routes.find((r) => r.slug === selectedSlug) ?? routes[0]
-  const trackGpx = selectedRoute ? resolveRouteGpxFile(selectedRoute) : undefined
-  const trackCoords = selectedRoute
-    ? parseRouteCoordinates(selectedRoute.coordinates)
-    : []
+  const trackGpx = useMemo(
+    () => (selectedRoute ? resolveRouteGpxFile(selectedRoute) : undefined),
+    [selectedRoute?.slug, selectedRoute?.gpxFile],
+  )
+  const trackCoords = useMemo(
+    () =>
+      selectedRoute ? parseRouteCoordinates(selectedRoute.coordinates) : [],
+    [selectedRoute?.coordinates],
+  )
 
   return (
     <div className="container mx-auto px-4 space-y-6 pb-12">
