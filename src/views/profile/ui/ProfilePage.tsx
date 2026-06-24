@@ -6,9 +6,27 @@ import { updateProfile } from '@/features/auth/model/auth.api'
 import { getFavorites } from '@/features/favorites'
 import { getUserComments, Comment } from '@/features/comments'
 import { getUserRatings } from '@/features/ratings/model/user-ratings.api'
+import {
+  getRides,
+  getRideStats,
+  getRideAnalytics,
+  getAchievements,
+  RideHistoryCard,
+  MonthlyGoalCard,
+  type RideSummary,
+  type RideStats,
+  type RideAnalytics,
+  type Achievement,
+} from '@/features/rides'
+import { AchievementsGrid } from '@/features/achievements'
 import { getAllRoutes, RouteResponse } from '@/shared/api/routes.api'
+import { formatDuration } from '@/shared/lib/ride/format'
+import { formatDistance } from '@/shared/lib/map/geo-utils'
 import { RouteCard } from '@/entities/route'
 import Link from 'next/link'
+
+/** Временно скрыты блоки аналитики и поездок в профиле */
+const SHOW_PROFILE_ACTIVITY = false
 
 interface UserRating {
   id: number
@@ -27,6 +45,12 @@ export function ProfilePage() {
   const [loadingFavorites, setLoadingFavorites] = useState(true)
   const [loadingComments, setLoadingComments] = useState(true)
   const [loadingRatings, setLoadingRatings] = useState(true)
+  const [recentRides, setRecentRides] = useState<RideSummary[]>([])
+  const [rideStats, setRideStats] = useState<RideStats | null>(null)
+  const [loadingRides, setLoadingRides] = useState(true)
+  const [analytics, setAnalytics] = useState<RideAnalytics | null>(null)
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [goalKm, setGoalKm] = useState(80)
   
   // Редактирование профиля
   const [isEditing, setIsEditing] = useState(false)
@@ -68,10 +92,26 @@ export function ProfilePage() {
         .then(setUserRatings)
         .catch((error) => console.error('Error loading ratings:', error))
         .finally(() => setLoadingRatings(false))
+
+      if (SHOW_PROFILE_ACTIVITY) {
+        Promise.all([getRides(), getRideStats(), getRideAnalytics(), getAchievements()])
+          .then(([rides, stats, a, ach]) => {
+            setRecentRides(rides.slice(0, 3))
+            setRideStats(stats)
+            setAnalytics(a)
+            setGoalKm(a.monthlyGoalKm)
+            setAchievements(ach)
+          })
+          .catch((error) => console.error('Error loading rides:', error))
+          .finally(() => setLoadingRides(false))
+      } else {
+        setLoadingRides(false)
+      }
     } else {
       setLoadingFavorites(false)
       setLoadingComments(false)
       setLoadingRatings(false)
+      setLoadingRides(false)
     }
   }, [isAuthenticated])
 
@@ -242,6 +282,92 @@ export function ProfilePage() {
             </div>
           )}
         </div>
+
+        {SHOW_PROFILE_ACTIVITY && analytics && (
+          <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <MonthlyGoalCard
+              currentKm={analytics.currentMonthKm}
+              goalKm={goalKm}
+              progress={analytics.goalProgress}
+              editable
+              onGoalUpdated={setGoalKm}
+            />
+            <div className="bg-white rounded-[12px] border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-black uppercase tracking-tight text-gray-900">
+                  Достижения
+                </h3>
+                <Link href="/stats" className="text-sm font-bold text-gray-600 hover:underline">
+                  Вся аналитика →
+                </Link>
+              </div>
+              <AchievementsGrid achievements={achievements} compact />
+            </div>
+          </div>
+        )}
+
+        {SHOW_PROFILE_ACTIVITY && (
+        <div className="mb-10">
+          <div className="flex items-end justify-between gap-4 mb-6">
+            <h2 className="text-[28px] font-black text-gray-900 uppercase tracking-tight">
+              Мои поездки
+            </h2>
+            <Link
+              href="/history"
+              className="text-sm font-bold text-gray-900 hover:underline shrink-0"
+            >
+              Вся история →
+            </Link>
+          </div>
+
+          {rideStats && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <div className="bg-gray-900 text-white rounded-[12px] p-4">
+                <p className="text-[10px] uppercase tracking-wide opacity-70">Всего км</p>
+                <p className="text-2xl font-black">{formatDistance(rideStats.totalDistanceKm)}</p>
+              </div>
+              <div className="bg-white rounded-[12px] border border-gray-100 p-4">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400">Поездок</p>
+                <p className="text-2xl font-black text-gray-900">{rideStats.ridesCount}</p>
+              </div>
+              <div className="bg-white rounded-[12px] border border-gray-100 p-4">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400">В движении</p>
+                <p className="text-2xl font-black text-gray-900">
+                  {formatDuration(rideStats.totalMovingSec)}
+                </p>
+              </div>
+              <div className="bg-white rounded-[12px] border border-gray-100 p-4">
+                <p className="text-[10px] uppercase tracking-wide text-gray-400">Ср. скорость</p>
+                <p className="text-2xl font-black text-gray-900">
+                  {rideStats.avgSpeedKmh != null ? `${rideStats.avgSpeedKmh} км/ч` : '—'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {loadingRides ? (
+            <p className="text-gray-500 text-sm">Загрузка поездок...</p>
+          ) : recentRides.length === 0 ? (
+            <div className="bg-white rounded-[12px] border border-gray-100 p-8 text-center">
+              <p className="text-gray-600 mb-4">
+                Здесь появятся ваши сохранённые поездки, когда они будут доступны в аккаунте
+              </p>
+              <Link
+                href="/map"
+                className="inline-block bg-gray-900 text-white px-5 py-2.5 rounded-[12px] font-bold text-sm uppercase"
+              >
+                Открыть карту
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentRides.map((ride) => (
+                <RideHistoryCard key={ride.id} ride={ride} />
+              ))}
+            </div>
+          )}
+        </div>
+        )}
 
         {/* Избранные маршруты */}
         <div className="mb-6">

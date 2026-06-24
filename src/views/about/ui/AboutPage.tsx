@@ -56,7 +56,7 @@ export function AboutPage() {
               О нашем<br />сервисе
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Эко-навигатор — это платформа для велосипедистов, которая помогает находить лучшие маршруты, 
+              BikeRoute — это платформа для велосипедистов, которая помогает находить лучшие маршруты, 
               делиться опытом и открывать новые места для катания.
             </p>
           </div>
@@ -108,8 +108,8 @@ export function AboutPage() {
                 Наша цель — сделать велосипедные прогулки доступными и безопасными для каждого.
               </p>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Эко-навигатор собирает лучшие маршруты Гродненской области, проверенные местными велосипедистами. 
-                Каждый маршрут включает детальное описание, интерактивную карту и важную информацию о сложности и достопримечательностях.
+                BikeRoute собирает лучшие маршруты Гродненской области, проверенные местными велосипедистами. 
+                Каждый маршрут включает детальное описание, GPX-трек и важную информацию о сложности и достопримечательностях.
               </p>
               <div className="flex gap-4">
                 <Link 
@@ -141,7 +141,7 @@ export function AboutPage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 max-w-6xl">
           <h2 className="text-[42px] font-black text-gray-900 uppercase tracking-tight text-center mb-16">
-            Почему Эко-навигатор?
+            Почему BikeRoute?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-gray-50 rounded-[16px] p-8 hover:shadow-lg transition-shadow">

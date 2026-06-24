@@ -8,8 +8,7 @@ import { RoutesModule } from './routes/routes.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { CommentsModule } from './comments/comments.module';
-import { AdminModule } from './admin/admin.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { RidesModule } from './rides/rides.module';
 
 @Module({
   imports: [
@@ -22,8 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     FavoritesModule,
     RatingsModule,
     CommentsModule,
-    NotificationsModule,
-    AdminModule,
+    RidesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

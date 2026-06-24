@@ -29,5 +29,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "backend", "poetry", ".next"]
+  "exclude": ["node_modules", "backend", "src/entities/route/model/mock-data.ts"]
 }

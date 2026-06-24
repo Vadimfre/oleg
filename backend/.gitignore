@@ -1,13 +1,5 @@
 node_modules
-dist
-
-# local overrides only
-.env*.local
-
-# .env и .env.example — в репозитории для Coolify / деплоя
+# Keep environment variables out of version control
+.env
 
 /generated/prisma
-upload/
-dev.db
-*.db-journal
-

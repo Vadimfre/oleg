@@ -4,27 +4,15 @@ import { useRouter } from 'next/navigation'
 import { RouteCard } from '@/entities/route'
 import { useRoutes } from '@/features/routes'
 import { RouteResponse } from '@/shared/api/routes.api'
-import type { RouteSort } from '@/entities/route'
 
 interface RouteListProps {
   onRouteSelect?: (route: RouteResponse) => void
   filter?: 'all' | 'easy' | 'medium' | 'hard'
-  searchQuery?: string
-  sort?: RouteSort
 }
 
-export function RouteList({
-  onRouteSelect,
-  filter = 'all',
-  searchQuery = '',
-  sort = 'newest',
-}: RouteListProps) {
+export function RouteList({ onRouteSelect, filter = 'all' }: RouteListProps) {
   const router = useRouter()
-  const { routes, isLoading, error } = useRoutes({
-    difficulty: filter,
-    q: searchQuery,
-    sort,
-  })
+  const { routes, isLoading, error } = useRoutes({ difficulty: filter })
 
   const handleRouteClick = (route: RouteResponse) => {
     if (onRouteSelect) {
@@ -37,7 +25,7 @@ export function RouteList({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-96 bg-gray-100 rounded-[12px] animate-pulse" />
         ))}
@@ -53,17 +41,8 @@ export function RouteList({
     )
   }
 
-  if (!isLoading && routes.length === 0) {
-    return (
-      <div className="text-center py-16 rounded-[12px] border border-gray-100 bg-white">
-        <p className="text-lg font-semibold text-gray-900 mb-2">Ничего не найдено</p>
-        <p className="text-gray-600 text-sm">Попробуй изменить поиск или фильтры</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {routes.map((route) => (
         <RouteCard
           key={route.id}

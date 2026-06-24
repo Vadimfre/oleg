@@ -1,5 +1,4 @@
 import type { Route } from './types';
-import { ROUTE_COORDINATES_BY_SLUG } from '@/shared/data/routeCoordinates';
 
 export const ROUTES_DATA: Route[] = [
   {
@@ -12,8 +11,8 @@ export const ROUTES_DATA: Route[] = [
     distance: 45,
     duration: 4.5,
     elevation: 120,
-    coordinates: ROUTE_COORDINATES_BY_SLUG['avgustovsci-kanal'],
-    imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/avgust-velo.kml',
+    imageUrl: '/images/routes/avgustovsci-kanal.png',
     highlights: [
       'Шлюзы Августовского канала',
       'Исторические мосты',
@@ -25,22 +24,22 @@ export const ROUTES_DATA: Route[] = [
   },
   {
     id: '2',
-    slug: 'lestnica-v-nebo',
-    title: 'Лестница в небо',
+    slug: 'pyshki',
+    title: 'Тропа здоровья · Пышки',
     description:
-      'Захватывающий маршрут из Гродно в Санники через холмистую местность. Маршрут получил название "Лестница в небо" благодаря живописным подъёмам с видами на долины. Отличается красивыми ландшафтами и разнообразием природных зон.',
-    difficulty: 'hard',
-    distance: 38,
-    duration: 4,
-    elevation: 280,
-    coordinates: ROUTE_COORDINATES_BY_SLUG['lestnica-v-nebo'],
-    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=600&fit=crop',
+      'Велосипедный маршрут «Тропа Здоровья» № 418 в урочище Пышки. Кольцевой маршрут от ул. Фестивальной через форт № 1 Гродненской крепости, спуск к Неману с памятником курсантам-пограничникам и обратно вдоль правого берега реки.',
+    difficulty: 'easy',
+    distance: 6.15,
+    duration: 1.5,
+    elevation: 54,
+    gpxFile: '/gpx/pyshki.gpx',
+    imageUrl: '/images/routes/pyshki.png',
     highlights: [
-      'Панорамные холмы',
-      'Смотровые площадки',
-      'Деревня Санники',
-      'Лесные тропы',
-      'Исторические усадьбы',
+      'Форт № 1 Гродненской крепости',
+      'Памятник курсантам-пограничникам',
+      'Берег реки Неман',
+      'Кафе «Пышки»',
+      'Беседки отдыха на тропе',
     ],
     createdAt: '2024-02-10',
   },
@@ -54,8 +53,8 @@ export const ROUTES_DATA: Route[] = [
     distance: 28,
     duration: 2.5,
     elevation: 80,
-    coordinates: ROUTE_COORDINATES_BY_SLUG['grodno-losevo'],
-    imageUrl: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/grodno-losevo.gpx',
+    imageUrl: '/images/routes/grodno-losevo.png',
     highlights: [
       'Сельские пейзажи',
       'Деревня Лосево',
@@ -75,8 +74,8 @@ export const ROUTES_DATA: Route[] = [
     distance: 285,
     duration: 18,
     elevation: 450,
-    coordinates: ROUTE_COORDINATES_BY_SLUG['grodno-minsk'],
-    imageUrl: 'https://images.unsplash.com/photo-1486916856992-e4db22c8df33?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/grodno-minsk.gpx',
+    imageUrl: '/images/routes/grodno-minsk.png',
     highlights: [
       'Междугородная трасса',
       'Города по пути: Лида, Новогрудок',
@@ -96,8 +95,8 @@ export const ROUTES_DATA: Route[] = [
     distance: 95,
     duration: 7.5,
     elevation: 380,
-    coordinates: ROUTE_COORDINATES_BY_SLUG['dlinnyj-marshrut'],
-    imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/Long-bike.gpx',
+    imageUrl: '/images/routes/dlinnyj-marshrut.png',
     highlights: [
       'Разнообразный рельеф',
       'Тренировочные подъёмы',
@@ -117,8 +116,8 @@ export const ROUTES_DATA: Route[] = [
     distance: 15,
     duration: 1.5,
     elevation: 40,
-    coordinates: ROUTE_COORDINATES_BY_SLUG.pokatushka,
-    imageUrl: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/pokatushka.gpx',
+    imageUrl: '/images/routes/pokatushka.png',
     highlights: [
       'Городские парки',
       'Набережная Немана',

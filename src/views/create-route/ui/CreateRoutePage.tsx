@@ -1,21 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import dynamic from 'next/dynamic'
 import { Button, Card } from '@/shared/ui'
-import type { RoutePoint } from '@/widgets/RouteBuilderMap'
+import { RouteBuilderMap } from '@/widgets/RouteBuilderMap'
 
-const RouteBuilderMap = dynamic(
-  () => import('@/widgets/RouteBuilderMap').then((m) => m.RouteBuilderMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-500 rounded-3xl">
-        Загрузка карты…
-      </div>
-    ),
-  },
-)
+interface RoutePoint {
+  lat: number
+  lng: number
+  id: string
+}
 
 export function CreateRoutePage() {
   const [routeName, setRouteName] = useState('')

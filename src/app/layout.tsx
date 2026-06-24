@@ -3,8 +3,8 @@ import { Inter } from 'next/font/google'
 import '@/shared/styles/globals.css'
 import 'leaflet/dist/leaflet.css'
 import { Header } from '@/widgets/Header'
-import { NewRoutesNotifier } from '@/widgets/NewRoutesNotifier'
-import { EmailUnsubFeedback } from '@/widgets/EmailUnsubFeedback'
+import { Footer } from '@/widgets/Footer'
+import { FabNavigate } from '@/widgets/FabNavigate'
 import { AuthProvider } from '@/features/auth'
 
 const inter = Inter({ 
@@ -14,7 +14,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Эко-навигатор — планирование велосипедных маршрутов',
+  title: 'BikeRoutes - Планирование велосипедных маршрутов',
   description: 'Создавай, планируй и навигируй по велосипедным маршрутам',
 }
 
@@ -28,11 +28,11 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
           <Header />
-          <NewRoutesNotifier />
-          <EmailUnsubFeedback />
-          <main className="pt-24">
+          <main className="pt-24 min-h-screen">
             {children}
           </main>
+          <Footer />
+          <FabNavigate />
         </AuthProvider>
       </body>
     </html>

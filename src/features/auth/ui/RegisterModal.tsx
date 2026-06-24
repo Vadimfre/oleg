@@ -1,6 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { registerSchema, type RegisterFormData } from '@/shared/lib/validations'
+import { FormField } from '@/shared/ui/FormField'
 import { register } from '../model/auth.api'
 import { useAuth } from '../model/AuthContext'
 
@@ -10,109 +13,51 @@ interface RegisterModalProps {
   onSwitchToLogin: () => void
 }
 
-interface FormData {
-  name: string
-  email: string
-  password: string
-  confirmPassword: string
-}
-
-interface FormErrors {
-  name?: string
-  email?: string
-  password?: string
-  confirmPassword?: string
-}
-
 export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
   const { refreshUser } = useAuth()
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+  const {
+    register: registerField,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   })
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isOpen) return null
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Имя обязательно'
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Имя должно содержать минимум 2 символа'
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email обязателен'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Некорректный email адрес'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Пароль обязателен'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Пароль должен содержать минимум 6 символов'
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Подтвердите пароль'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Пароли не совпадают'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSubmitting(true)
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       await register({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
+        email: data.email,
+        password: data.password,
+        name: data.name,
       })
-
-      // Обновляем пользователя в контексте
       await refreshUser()
       onClose()
-    } catch (error: any) {
-      setErrors({ email: error.message })
-    } finally {
-      setIsSubmitting(false)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Ошибка регистрации'
+      setError('email', { message })
     }
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-[12px] max-w-[500px] w-full max-h-[90vh] overflow-y-auto animate-slideUp relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors z-10"
         >
@@ -121,103 +66,44 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
           </svg>
         </button>
 
-        {/* Header - по центру */}
         <div className="text-center p-6 pb-4 border-b border-gray-100">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-            [создай аккаунт]
-          </p>
-          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
-            РЕГИСТРАЦИЯ
-          </h2>
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">[создай аккаунт]</p>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">РЕГИСТРАЦИЯ</h2>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Имя */}
-          <div>
-            <label htmlFor="name" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
-              Имя
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-[8px] border ${
-                errors.name ? 'border-red-500' : 'border-gray-200'
-              } focus:outline-none focus:border-gray-900 transition-colors text-gray-900`}
-              placeholder="Ваше имя"
-            />
-            {errors.name && (
-              <p className="mt-1.5 text-xs text-red-500">{errors.name}</p>
-            )}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="p-6 space-y-4">
+          <FormField
+            label="Имя"
+            type="text"
+            placeholder="Ваше имя"
+            error={errors.name?.message}
+            {...registerField('name')}
+          />
 
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-[8px] border ${
-                errors.email ? 'border-red-500' : 'border-gray-200'
-              } focus:outline-none focus:border-gray-900 transition-colors text-gray-900`}
-              placeholder="example@mail.com"
-            />
-            {errors.email && (
-              <p className="mt-1.5 text-xs text-red-500">{errors.email}</p>
-            )}
-          </div>
+          <FormField
+            label="Email"
+            type="email"
+            placeholder="example@mail.com"
+            error={errors.email?.message}
+            {...registerField('email')}
+          />
 
-          {/* Пароль */}
-          <div>
-            <label htmlFor="password" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
-              Пароль
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-[8px] border ${
-                errors.password ? 'border-red-500' : 'border-gray-200'
-              } focus:outline-none focus:border-gray-900 transition-colors text-gray-900`}
-              placeholder="Минимум 6 символов"
-            />
-            {errors.password && (
-              <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>
-            )}
-          </div>
+          <FormField
+            label="Пароль"
+            type="password"
+            placeholder="Мин. 8 символов, заглавная, цифра, спецсимвол"
+            error={errors.password?.message}
+            {...registerField('password')}
+          />
 
-          {/* Подтверждение пароля */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
-              Подтверждение пароля
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-[8px] border ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-              } focus:outline-none focus:border-gray-900 transition-colors text-gray-900`}
-              placeholder="Повторите пароль"
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1.5 text-xs text-red-500">{errors.confirmPassword}</p>
-            )}
-          </div>
+          <FormField
+            label="Подтверждение пароля"
+            type="password"
+            placeholder="Повторите пароль"
+            error={errors.confirmPassword?.message}
+            {...registerField('confirmPassword')}
+          />
 
-          {/* Кнопка отправки */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -226,7 +112,6 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
             {isSubmitting ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
 
-          {/* Ссылка на вход */}
           <div className="text-center pt-4 border-t border-gray-100">
             <p className="text-sm text-gray-600">
               Уже есть аккаунт?{' '}

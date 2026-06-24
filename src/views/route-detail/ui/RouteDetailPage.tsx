@@ -1,26 +1,15 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import dynamic from 'next/dynamic'
+import { StaticRouteMap } from '@/widgets/StaticRouteMap'
 import Link from 'next/link'
-import { useAuth, LoginModal } from '@/features/auth'
+import { useAuth } from '@/features/auth'
 import { useRoute } from '@/features/routes'
 import { addToFavorites, removeFromFavorites, checkIsFavorite } from '@/features/favorites'
 import { RatingModal, rateRoute } from '@/features/ratings'
 import { CommentsSection } from '@/features/comments'
-import { showToast } from '@/shared/ui/Toast'
-
-const StaticRouteMap = dynamic(
-  () => import('@/widgets/StaticRouteMap').then((m) => m.StaticRouteMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-500">
-        Загрузка карты…
-      </div>
-    ),
-  },
-)
+import { showToast, showAuthRequiredToast } from '@/shared/ui/Toast'
+import { WeatherCard } from '@/features/weather'
 
 interface RouteDetailPageProps {
   slug: string
@@ -33,7 +22,6 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false)
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const commentsRef = useRef<HTMLDivElement>(null)
 
@@ -43,38 +31,40 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
   const getSliderImages = (routeSlug: string): string[] => {
     const imageSets: Record<string, string[]> = {
       'avgustovsci-kanal': [
-        'https://vgr.by/wp-content/uploads/2019/06/august8.jpg',
-        'https://vgr.by/wp-content/uploads/2019/06/august14-768x512.jpg',
-        'https://vgr.by/wp-content/uploads/2019/06/august15-768x512.jpg',
-        'https://vgr.by/wp-content/uploads/2019/06/august16-768x512.jpg',
-        'http://grodno.gov.by/sm_full.aspx?guid=96693',
-        'http://grodno.gov.by/sm_full.aspx?guid=96703',
-        'http://grodno.gov.by/sm_full.aspx?guid=96713',
+        '/images/routes/avgustovsci-kanal.png',
+        '/images/routes/avgustovsci-kanal/slide-1.png',
+        '/images/routes/avgustovsci-kanal/slide-2.png',
+        '/images/routes/avgustovsci-kanal/slide-3.png',
+        '/images/routes/avgustovsci-kanal/slide-4.png',
       ],
-      'lestnica-v-nebo': [
-        'http://grodno.gov.by/sm_full.aspx?guid=96783',
-        'http://grodno.gov.by/sm_full.aspx?guid=96723',
-        'http://grodno.gov.by/sm_full.aspx?guid=96753',
+      'pyshki': [
+        '/images/routes/pyshki.png',
+        '/images/routes/pyshki/slide-1.png',
+        '/images/routes/pyshki/slide-2.png',
+        '/images/routes/pyshki/slide-3.png',
       ],
       'grodno-losevo': [
-        'http://grodno.gov.by/sm_full.aspx?guid=96733',
+        '/images/routes/grodno-losevo.png',
         'http://grodno.gov.by/sm_full.aspx?guid=96763',
         'http://grodno.gov.by/sm_full.aspx?guid=96743',
       ],
       'grodno-minsk': [
-        'http://grodno.gov.by/sm_full.aspx?guid=96773',
-        'http://grodno.gov.by/sm_full.aspx?guid=287633',
-        'http://grodno.gov.by/sm_full.aspx?guid=287623',
+        '/images/routes/grodno-minsk.png',
+        '/images/routes/grodno-minsk/slide-1.png',
+        '/images/routes/grodno-minsk/slide-2.png',
       ],
       'dlinnyj-marshrut': [
-        'http://grodno.gov.by/sm_full.aspx?guid=96813',
-        'http://grodno.gov.by/sm_full.aspx?guid=97473',
-        'http://grodno.gov.by/sm_full.aspx?guid=97503',
+        '/images/routes/dlinnyj-marshrut.png',
+        '/images/routes/dlinnyj-marshrut/slide-1.png',
+        '/images/routes/dlinnyj-marshrut/slide-2.png',
+        '/images/routes/dlinnyj-marshrut/slide-3.png',
       ],
       'pokatushka': [
-        'http://grodno.gov.by/sm_full.aspx?guid=97493',
-        'http://grodno.gov.by/sm_full.aspx?guid=287653',
-        'http://grodno.gov.by/sm_full.aspx?guid=287643',
+        '/images/routes/pokatushka.png',
+        '/images/routes/pokatushka/slide-1.png',
+        '/images/routes/pokatushka/slide-2.png',
+        '/images/routes/pokatushka/slide-3.png',
+        '/images/routes/pokatushka/slide-4.png',
       ],
     }
 
@@ -113,10 +103,13 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
     setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length)
   }
 
-  // Проверяем авторизацию при попытке взаимодействия
-  const requireAuth = (action: () => void) => {
+  const promptAuth = (reason: 'favorite' | 'rating' | 'comment') => {
+    showAuthRequiredToast(reason)
+  }
+
+  const requireAuth = (action: () => void, reason: 'favorite' | 'rating' | 'comment' = 'rating') => {
     if (!isAuthenticated) {
-      setIsLoginModalOpen(true)
+      promptAuth(reason)
       return
     }
     action()
@@ -132,7 +125,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
   // Обработчик оценки маршрута
   const handleRateRoute = async (rating: number, comment: string) => {
     if (!isAuthenticated) {
-      setIsLoginModalOpen(true)
+      promptAuth('rating')
       return
     }
 
@@ -150,7 +143,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
   // Toggle избранное
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      setIsLoginModalOpen(true)
+      promptAuth('favorite')
       return
     }
 
@@ -232,6 +225,10 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
           <p className="text-[15px] text-gray-600 max-w-2xl">
             {route.description}
           </p>
+        </div>
+
+        <div className="mb-4">
+          <WeatherCard />
         </div>
 
         {/* Сетка: статистика */}
@@ -340,7 +337,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
                 </div>
               </div>
               <button
-                onClick={() => requireAuth(() => setIsRatingModalOpen(true))}
+                onClick={() => requireAuth(() => setIsRatingModalOpen(true), 'rating')}
                 className="px-6 py-3 bg-gray-900 text-white text-sm font-bold rounded-[8px] hover:bg-gray-800 transition-colors"
               >
                 Оценить маршрут
@@ -354,7 +351,7 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
           {/* Карта */}
           <div className="lg:col-span-2 bg-white rounded-[12px] border border-gray-100 overflow-hidden">
             <div className="h-[500px]">
-              <StaticRouteMap coordinates={route.coordinates} routeSlug={route.slug} />
+              <StaticRouteMap gpxFile={route.gpxFile} />
             </div>
           </div>
 
@@ -377,6 +374,15 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
                 {isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
               </span>
             </button>
+
+            {/* Карта маршрута */}
+            <Link
+              href={`/navigate?slug=${route.slug}`}
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-dark-900 rounded-[12px] border border-primary-600 hover:bg-primary-400 transition-all font-bold"
+            >
+              <span className="text-xl">🧭</span>
+              <span>Открыть маршрут</span>
+            </Link>
 
             {/* Комментарии */}
             <button
@@ -477,7 +483,10 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
 
         {/* Комментарии */}
         <div ref={commentsRef}>
-          <CommentsSection routeId={slug} routeName={route.title} />
+          <CommentsSection
+            routeId={slug}
+            onCommentRequired={() => requireAuth(() => {}, 'comment')}
+          />
         </div>
       </div>
 
@@ -491,16 +500,6 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
         />
       )}
 
-      {isLoginModalOpen && (
-        <LoginModal
-          isOpen={isLoginModalOpen}
-          onClose={() => setIsLoginModalOpen(false)}
-          onSwitchToRegister={() => {
-            setIsLoginModalOpen(false)
-            // Можно добавить открытие регистрации, если нужно
-          }}
-        />
-      )}
     </div>
   )
 }

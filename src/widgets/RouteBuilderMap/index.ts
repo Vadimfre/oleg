@@ -1,1 +1,1 @@
-export { RouteBuilderMap, type RoutePoint } from './ui/RouteBuilderMap'
+export { RouteBuilderMap } from './ui/RouteBuilderMap'

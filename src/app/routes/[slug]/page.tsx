@@ -1,9 +1,7 @@
 import { RouteDetailPage } from '@/views/route-detail'
 
 interface PageProps {
-  params: Promise<{
-    slug: string
-  }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function RouteDetailPageRoute({ params }: PageProps) {

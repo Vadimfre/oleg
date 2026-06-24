@@ -1,7 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { ROUTE_COORDINATES_BY_SLUG } from '../src/data/route-coordinates';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+const DEMO_USER = {
+  email: 'demo@bikeroutes.by',
+  password: 'demo123456',
+  name: 'Олег Демо',
+};
 
 const ROUTES_SEED_DATA = [
   {
@@ -13,7 +19,8 @@ const ROUTES_SEED_DATA = [
     distance: 45,
     duration: 4.5,
     elevation: 120,
-    imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/avgust-velo.kml',
+    imageUrl: '/images/routes/avgustovsci-kanal.png',
     highlights: JSON.stringify([
       'Шлюзы Августовского канала',
       'Исторические мосты',
@@ -23,21 +30,22 @@ const ROUTES_SEED_DATA = [
     ]),
   },
   {
-    slug: 'lestnica-v-nebo',
-    title: 'Лестница в небо',
+    slug: 'pyshki',
+    title: 'Тропа здоровья · Пышки',
     description:
-      'Захватывающий маршрут из Гродно в Санники через холмистую местность. Маршрут получил название "Лестница в небо" благодаря живописным подъёмам с видами на долины. Отличается красивыми ландшафтами и разнообразием природных зон.',
-    difficulty: 'hard',
-    distance: 38,
-    duration: 4,
-    elevation: 280,
-    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=600&fit=crop',
+      'Велосипедный маршрут «Тропа Здоровья» № 418 в урочище Пышки. Кольцевой маршрут от ул. Фестивальной через форт № 1 Гродненской крепости, спуск к Неману с памятником курсантам-пограничникам и обратно вдоль правого берега реки.',
+    difficulty: 'easy',
+    distance: 6.15,
+    duration: 1.5,
+    elevation: 54,
+    gpxFile: '/gpx/pyshki.gpx',
+    imageUrl: '/images/routes/pyshki.png',
     highlights: JSON.stringify([
-      'Панорамные холмы',
-      'Смотровые площадки',
-      'Деревня Санники',
-      'Лесные тропы',
-      'Исторические усадьбы',
+      'Форт № 1 Гродненской крепости',
+      'Памятник курсантам-пограничникам',
+      'Берег реки Неман',
+      'Кафе «Пышки»',
+      'Беседки отдыха на тропе',
     ]),
   },
   {
@@ -49,7 +57,8 @@ const ROUTES_SEED_DATA = [
     distance: 28,
     duration: 2.5,
     elevation: 80,
-    imageUrl: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/grodno-losevo.gpx',
+    imageUrl: '/images/routes/grodno-losevo.png',
     highlights: JSON.stringify([
       'Сельские пейзажи',
       'Деревня Лосево',
@@ -67,7 +76,8 @@ const ROUTES_SEED_DATA = [
     distance: 285,
     duration: 18,
     elevation: 450,
-    imageUrl: 'https://images.unsplash.com/photo-1486916856992-e4db22c8df33?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/grodno-minsk.gpx',
+    imageUrl: '/images/routes/grodno-minsk.png',
     highlights: JSON.stringify([
       'Междугородная трасса',
       'Города по пути: Лида, Новогрудок',
@@ -85,7 +95,8 @@ const ROUTES_SEED_DATA = [
     distance: 95,
     duration: 7.5,
     elevation: 380,
-    imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/Long-bike.gpx',
+    imageUrl: '/images/routes/dlinnyj-marshrut.png',
     highlights: JSON.stringify([
       'Разнообразный рельеф',
       'Тренировочные подъёмы',
@@ -103,7 +114,8 @@ const ROUTES_SEED_DATA = [
     distance: 15,
     duration: 1.5,
     elevation: 40,
-    imageUrl: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&h=600&fit=crop',
+    gpxFile: '/gpx/pokatushka.gpx',
+    imageUrl: '/images/routes/pokatushka.png',
     highlights: JSON.stringify([
       'Городские парки',
       'Набережная Немана',
@@ -114,16 +126,44 @@ const ROUTES_SEED_DATA = [
   },
 ];
 
+async function seedDemoUser() {
+  const hashedPassword = await bcrypt.hash(DEMO_USER.password, 10);
+
+  const user = await prisma.user.upsert({
+    where: { email: DEMO_USER.email },
+    update: {
+      name: DEMO_USER.name,
+      password: hashedPassword,
+    },
+    create: {
+      email: DEMO_USER.email,
+      password: hashedPassword,
+      name: DEMO_USER.name,
+    },
+  });
+
+  await prisma.favorite.upsert({
+    where: {
+      userId_routeId: { userId: user.id, routeId: 'pokatushka' },
+    },
+    update: {},
+    create: { userId: user.id, routeId: 'pokatushka' },
+  });
+
+  console.log(`✅ Демо-аккаунт: ${DEMO_USER.email} / ${DEMO_USER.password}`);
+}
+
 async function main() {
-  console.log('🚴 Начинаем seed маршрутов...');
+  console.log('🚴 Начинаем seed...');
+
+  await seedDemoUser();
 
   await prisma.route.deleteMany({});
   console.log('✅ Старые маршруты удалены');
 
   for (const route of ROUTES_SEED_DATA) {
-    const coordinates = JSON.stringify(ROUTE_COORDINATES_BY_SLUG[route.slug] ?? [[53.6693, 23.8131]]);
     await prisma.route.create({
-      data: { ...route, coordinates },
+      data: route,
     });
     console.log(`✅ Добавлен маршрут: ${route.title}`);
   }

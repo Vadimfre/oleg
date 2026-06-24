@@ -1,91 +1,181 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { openLoginModal } from '@/shared/lib/open-login-modal'
+
+export type ToastType = 'success' | 'error' | 'info' | 'auth'
 
 interface ToastProps {
   message: string
-  type: 'success' | 'error' | 'info'
+  type: ToastType
+  title?: string
+  actionLabel?: string
+  actionHref?: string
+  onAction?: () => void
   duration?: number
   onClose?: () => void
 }
 
-export function Toast({ message, type, duration = 4000, onClose }: ToastProps) {
+const styles: Record<ToastType, { shell: string; icon: React.ReactNode }> = {
+  success: {
+    shell: 'bg-white border-emerald-200 shadow-[0_12px_40px_rgba(16,185,129,0.18)]',
+    icon: (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 font-bold">
+        ✓
+      </span>
+    ),
+  },
+  error: {
+    shell: 'bg-white border-red-200 shadow-[0_12px_40px_rgba(239,68,68,0.16)]',
+    icon: (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 font-bold">
+        !
+      </span>
+    ),
+  },
+  info: {
+    shell: 'bg-white border-blue-200 shadow-[0_12px_40px_rgba(59,130,246,0.14)]',
+    icon: (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 font-bold">
+        i
+      </span>
+    ),
+  },
+  auth: {
+    shell: 'bg-dark-900 border-primary/40 shadow-[0_16px_48px_rgba(0,0,0,0.28)]',
+    icon: (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-lg">
+        🔒
+      </span>
+    ),
+  },
+}
+
+export function Toast({
+  message,
+  type,
+  title,
+  actionLabel,
+  actionHref,
+  onAction,
+  duration = 4000,
+  onClose,
+}: ToastProps) {
   const [isVisible, setIsVisible] = useState(true)
+  const style = styles[type]
+  const isAuth = type === 'auth'
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(() => onClose?.(), 300)
+      if (onClose) setTimeout(onClose, 300)
     }, duration)
 
     return () => clearTimeout(timer)
   }, [duration, onClose])
 
-  const bgColor = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
-  }[type]
+  const close = () => {
+    setIsVisible(false)
+    if (onClose) setTimeout(onClose, 300)
+  }
 
-  const icon = {
-    success: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-      </svg>
-    ),
-    error: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-      </svg>
-    ),
-    info: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-      </svg>
-    ),
-  }[type]
+  const actionButton =
+    actionLabel &&
+    (actionHref ? (
+      <Link
+        href={actionHref}
+        onClick={close}
+        className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black uppercase tracking-wide transition-colors ${
+          isAuth
+            ? 'bg-primary text-dark-900 hover:bg-primary-400'
+            : 'bg-gray-900 text-white hover:bg-gray-800'
+        }`}
+      >
+        {actionLabel}
+        <span aria-hidden>→</span>
+      </Link>
+    ) : (
+      <button
+        type="button"
+        onClick={() => {
+          onAction?.()
+          close()
+        }}
+        className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-black uppercase tracking-wide transition-colors ${
+          isAuth
+            ? 'bg-primary text-dark-900 hover:bg-primary-400'
+            : 'bg-gray-900 text-white hover:bg-gray-800'
+        }`}
+      >
+        {actionLabel}
+        <span aria-hidden>→</span>
+      </button>
+    ))
 
   return (
     <div
-      className={`fixed top-4 right-4 z-[10000] flex items-center gap-3 ${bgColor} text-white px-4 py-3 rounded-[12px] shadow-lg transition-all duration-300 ${
-        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-      }`}
+      className={`pointer-events-auto w-[min(92vw,420px)] rounded-2xl border px-4 py-4 transition-all duration-300 toast-enter ${
+        style.shell
+      } ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}
+      role="status"
+      aria-live="polite"
     >
-      {icon}
-      <span className="font-medium">{message}</span>
-      <button
-        onClick={() => {
-          setIsVisible(false)
-          setTimeout(() => onClose?.(), 300)
-        }}
-        className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+      <div className="flex items-start gap-3">
+        {style.icon}
+        <div className="min-w-0 flex-1">
+          {title && (
+            <p className={`text-sm font-black leading-snug ${isAuth ? 'text-white' : 'text-gray-900'}`}>
+              {title}
+            </p>
+          )}
+          <p
+            className={`text-sm leading-relaxed ${title ? 'mt-1' : ''} ${
+              isAuth ? 'text-gray-300' : 'text-gray-600'
+            }`}
+          >
+            {message}
+          </p>
+          {actionButton && <div className="mt-3">{actionButton}</div>}
+        </div>
+        <button
+          type="button"
+          onClick={close}
+          className={`shrink-0 rounded-lg p-1.5 transition-colors ${
+            isAuth
+              ? 'text-gray-400 hover:bg-white/10 hover:text-white'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'
+          }`}
+          aria-label="Закрыть"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }
 
-// Toast Manager
-let toastId = 0
-const toasts: Array<{ id: number; component: React.ReactElement }> = []
+type ToastOptions = {
+  title?: string
+  actionLabel?: string
+  actionHref?: string
+  onAction?: () => void
+  duration?: number
+}
 
-export function showToast(message: string, type: 'success' | 'error' | 'info' = 'info', duration = 4000) {
-  const id = ++toastId
-
-  // Создаем контейнер если его нет
+function mountToast(props: ToastProps) {
   let container = document.getElementById('toast-container')
   if (!container) {
     container = document.createElement('div')
     container.id = 'toast-container'
+    container.className =
+      'fixed bottom-6 left-4 z-[10000] flex w-full max-w-[420px] flex-col items-start gap-3 pointer-events-none'
     document.body.appendChild(container)
   }
 
-  // Создаем toast элемент
   const toastElement = document.createElement('div')
-  toastElement.id = `toast-${id}`
   container.appendChild(toastElement)
 
   const removeToast = () => {
@@ -95,9 +185,47 @@ export function showToast(message: string, type: 'success' | 'error' | 'info' = 
     }
   }
 
-  // Рендерим toast
   import('react-dom/client').then(({ createRoot }) => {
     const root = createRoot(toastElement)
-    root.render(<Toast message={message} type={type} duration={duration} onClose={removeToast} />)
+    root.render(<Toast {...props} onClose={removeToast} />)
+  })
+}
+
+export function showToast(
+  message: string,
+  type: ToastType = 'info',
+  duration = 4000,
+  options?: Omit<ToastOptions, 'duration'>,
+) {
+  mountToast({ message, type, duration, ...options })
+}
+
+const authCopy = {
+  favorite: {
+    title: 'Нужен аккаунт',
+    message: 'Войдите, чтобы добавлять маршруты в избранное и быстро находить их в профиле.',
+  },
+  rating: {
+    title: 'Оценка доступна после входа',
+    message: 'Авторизуйтесь, чтобы поставить оценку и помочь другим велосипедистам с выбором.',
+  },
+  comment: {
+    title: 'Комментарии для пользователей',
+    message: 'Войдите в аккаунт, чтобы оставлять комментарии к маршрутам.',
+  },
+} as const
+
+export type AuthToastReason = keyof typeof authCopy
+
+export function showAuthRequiredToast(reason: AuthToastReason) {
+  const copy = authCopy[reason]
+
+  mountToast({
+    type: 'auth',
+    title: copy.title,
+    message: copy.message,
+    actionLabel: 'Войти',
+    onAction: openLoginModal,
+    duration: 5500,
   })
 }

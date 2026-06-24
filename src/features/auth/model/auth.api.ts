@@ -1,5 +1,6 @@
 import { RegisterData, LoginData, AuthResponse, User } from './types'
-import { API_URL } from '@/shared/config/env'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 // Регистрация
 export async function register(data: RegisterData): Promise<AuthResponse> {
@@ -66,7 +67,11 @@ export async function getProfile(): Promise<User> {
 }
 
 // Обновить профиль
-export async function updateProfile(data: { name?: string; email?: string }): Promise<{ user: User }> {
+export async function updateProfile(data: {
+  name?: string
+  email?: string
+  monthlyGoalKm?: number
+}): Promise<{ user: User }> {
   const response = await fetch(`${API_URL}/auth/profile`, {
     method: 'PUT',
     headers: {

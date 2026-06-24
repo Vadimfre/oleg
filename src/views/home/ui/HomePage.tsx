@@ -1,19 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import dynamic from 'next/dynamic'
 import { RouteList } from '@/widgets/RouteList'
-import { Button } from '@/shared/ui'
 import Link from 'next/link'
-
-const MapView = dynamic(() => import('@/widgets/MapView').then((m) => m.MapView), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-500">
-      Загрузка карты…
-    </div>
-  ),
-})
+import { FeaturedRouteSpotlight, HomeWeatherSection } from '@/features/home'
+import { SectionReveal } from '@/shared/ui/SectionReveal'
 
 // Компонент анимации подсчёта
 function CountUp({ end, duration = 2000, suffix = '' }: { end: number; duration?: number; suffix?: string }) {
@@ -67,43 +58,74 @@ function CountUp({ end, duration = 2000, suffix = '' }: { end: number; duration?
 
 export function HomePage() {
   const [filter, setFilter] = useState<'all' | 'easy' | 'medium' | 'hard'>('all')
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <div className="relative h-[500px] -mt-24 mb-12 overflow-hidden bg-white">
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center">
-          <div className="max-w-4xl mx-auto text-center px-4 mb-12">
-            <h1 className="text-[64px] font-semibold text-dark-900 mb-6 leading-[72px] uppercase tracking-tight">
-              ВЫБЕРИ СВОЙ МАРШРУТ<br />
-              ДЛЯ ВЕЛОПРОГУЛКИ
-            </h1>
-            
-            <p className="text-lg md:text-xl text-dark-600  leading-tight uppercase tracking-tight">
-              МЫ БЕРЕЖНО СОБЕРЕМ МАРШРУТ И ОТПРАВИМ ВАМ В УДОБНОМ ДЛЯ<br />
-              ВАС ВИДЕ, БУДЬ ТО КАРТА ИЛИ НАВИГАЦИЯ
-            </p>
-          </div>
+      {/* Hero */}
+      <div className="relative min-h-[560px] -mt-24 mb-16 overflow-hidden">
+        <div className="absolute inset-0 bg-mesh" />
+        <div className="absolute top-20 left-[10%] w-72 h-72 rounded-full bg-primary/30 mesh-blob animate-float" />
+        <div className="absolute bottom-10 right-[15%] w-96 h-96 rounded-full bg-blue-400/20 mesh-blob animate-float-delayed" />
 
-          {/* CTA Button */}
-          <div className="w-full max-w-[1440px] px-2.5">
-            <button 
-              onClick={() => {
-                document.getElementById('routes-section')?.scrollIntoView({ 
-                  behavior: 'smooth',
-                  block: 'start'
-                })
-              }}
-              className="w-full bg-dark-900 text-white py-3 rounded-[12px] text-lg font-medium hover:bg-dark-800 transition-colors uppercase tracking-tight shadow-lg cursor-pointer"
-            >
-              Выбрать маршрут
-            </button>
+        <div className="relative z-10 container mx-auto px-4 pt-28 pb-16 max-w-[1400px]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+            <div className="lg:col-span-7">
+              <span className="inline-block mb-6 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/40 text-xs font-bold uppercase tracking-[0.2em] text-dark-800">
+                Гродно
+              </span>
+              <h1 className="text-[48px] sm:text-[64px] lg:text-[72px] font-black text-dark-900 leading-[0.95] uppercase tracking-tight mb-6">
+                ВЕЛО
+                <span className="text-primary">.</span>
+                <br />
+                МАРШРУТЫ
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-dark-900 via-dark-600 to-dark-900 animate-gradient">
+                  БЕЗ СЮРПРИЗОВ
+                </span>
+              </h1>
+              <p className="text-base md:text-lg text-dark-600 max-w-lg leading-relaxed mb-8">
+                Карта маршрутов, погода для байкера, история поездок и аналитика — всё, чтобы
+                просто сесть на велосипед и поехать.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    document.getElementById('routes-section')?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start',
+                    })
+                  }
+                  className="px-8 py-4 bg-dark-900 text-white font-bold uppercase tracking-tight rounded-xl hover:bg-dark-800 transition-colors shadow-hard"
+                >
+                  Маршруты
+                </button>
+                <Link
+                  href="/navigate"
+                  className="px-8 py-4 bg-primary text-dark-900 font-black uppercase tracking-tight rounded-xl btn-glow"
+                >
+                  Открыть маршрут
+                </Link>
+                <Link
+                  href="/weather"
+                  className="px-8 py-4 border-2 border-dark-900/15 font-bold uppercase tracking-tight rounded-xl hover:bg-white/80 transition-colors"
+                >
+                  Погода
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-4">
+              <SectionReveal delay={100}>
+                <FeaturedRouteSpotlight />
+              </SectionReveal>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* О нас - точь-в-точь как на скриншоте */}
       <section id="about-service" className="container mx-auto px-4 mb-24">
+        <SectionReveal>
         <div className="max-w-[1400px] mx-auto">
           {/* Верхняя часть */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20">
@@ -164,10 +186,11 @@ export function HomePage() {
             </div>
           </div>
         </div>
+        </SectionReveal>
       </section>
 
-      {/* Фундамент уверенности - точь-в-точь как на скриншоте */}
-      <section id="safety-section" className="bg-gray-50 py-24 mb-24">
+      <section id="safety-section" className="bg-gradient-to-b from-gray-50 to-white py-24 mb-24 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="container mx-auto px-4">
           <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
@@ -193,16 +216,15 @@ export function HomePage() {
               </div>
             </div>
 
-            {/* Три карточки внизу */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Карточка 1 - светлая */}
-              <div className="bg-white p-10 min-h-[400px] rounded-[12px] flex flex-col justify-between group hover:shadow-lg transition-shadow duration-300">
+              <SectionReveal delay={0}>
+              <div className="bg-white p-10 min-h-[400px] rounded-2xl flex flex-col justify-between card-hover border border-gray-100">
                 <div>
                   <div className="flex items-start justify-between mb-6">
                     <h3 className="text-2xl font-bold text-gray-900 uppercase leading-tight">
                       ПРОВЕРЕННЫЕ<br />МАРШРУТЫ
                     </h3>
-                    <div className="w-8 h-8 bg-gray-900 rounded-sm flex-shrink-0"></div>
+                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-lg">✓</div>
                   </div>
                   <div className="space-y-4 mb-auto">
                     <p className="text-base text-gray-600 leading-relaxed">
@@ -217,15 +239,16 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
+              </SectionReveal>
 
-              {/* Карточка 2 - светлая */}
-              <div className="bg-white p-10 min-h-[400px] rounded-[12px] flex flex-col justify-between group hover:shadow-lg transition-shadow duration-300">
+              <SectionReveal delay={80}>
+              <div className="bg-white p-10 min-h-[400px] rounded-2xl flex flex-col justify-between card-hover border border-gray-100">
                 <div>
                   <div className="flex items-start justify-between mb-6">
                     <h3 className="text-2xl font-bold text-gray-900 uppercase leading-tight">
                       ДЕТАЛЬНАЯ<br />ИНФОРМАЦИЯ
                     </h3>
-                    <div className="w-8 h-8 bg-gray-900 rounded-sm flex-shrink-0"></div>
+                    <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-lg text-white">📊</div>
                   </div>
                   <div className="space-y-4 mb-auto">
                     <p className="text-base text-gray-600 leading-relaxed">
@@ -240,19 +263,21 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
+              </SectionReveal>
 
-              {/* Карточка 3 - черная */}
-              <div className="bg-gray-900 p-10 min-h-[400px] rounded-[12px] flex flex-col justify-between group hover:bg-gray-800 transition-colors duration-300">
-                <div>
+              <SectionReveal delay={160}>
+              <div className="bg-gray-900 p-10 min-h-[400px] rounded-2xl flex flex-col justify-between card-hover relative overflow-hidden">
+                <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-primary/20 rounded-full blur-2xl" />
+                <div className="relative">
                   <div className="flex items-start justify-between mb-6">
                     <h3 className="text-2xl font-bold text-white uppercase leading-tight">
                       НАВИГАЦИЯ<br />БЕЗ ЗАБЛУЖДЕНИЙ
                     </h3>
-                    <div className="w-8 h-8 bg-white rounded-sm flex-shrink-0"></div>
+                    <div className="w-10 h-10 bg-primary text-dark-900 rounded-xl flex items-center justify-center text-lg font-black">📍</div>
                   </div>
                   <div className="space-y-4 mb-auto">
                     <p className="text-base text-gray-300 leading-relaxed">
-                      Точные GPS-треки на всём протяжении маршрута. 
+                      Подробный трек маршрута на всей дистанции.
                       Следуй по проложенному пути
                     </p>
                   </div>
@@ -263,13 +288,20 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
+              </SectionReveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Популярные маршруты - в стиле сайта */}
+      <section className="container mx-auto px-4 mb-16 max-w-[1400px]">
+        <SectionReveal>
+          <HomeWeatherSection />
+        </SectionReveal>
+      </section>
+
       <section id="routes-section" className="container mx-auto px-4 mb-24 scroll-mt-24">
+        <SectionReveal>
         <div className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
             {/* Левая часть - маленький текст */}
@@ -287,12 +319,12 @@ export function HomePage() {
                 </h2>
                 
                 {/* Фильтры */}
-                <div className="flex items-center gap-2 bg-gray-50 rounded-[12px] p-1.5">
+                <div className="flex items-center gap-2 bg-white/80 backdrop-blur border border-gray-100 rounded-2xl p-1.5 shadow-soft">
                   <button
                     onClick={() => setFilter('all')}
-                    className={`px-4 py-2 rounded-[8px] text-sm font-medium transition-all duration-200 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                       filter === 'all'
-                        ? 'bg-white text-gray-900 shadow-sm'
+                        ? 'bg-dark-900 text-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -300,9 +332,9 @@ export function HomePage() {
                   </button>
                   <button
                     onClick={() => setFilter('easy')}
-                    className={`px-4 py-2 rounded-[8px] text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                       filter === 'easy'
-                        ? 'bg-white text-gray-900 shadow-sm'
+                        ? 'bg-dark-900 text-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -313,9 +345,9 @@ export function HomePage() {
                   </button>
                   <button
                     onClick={() => setFilter('medium')}
-                    className={`px-4 py-2 rounded-[8px] text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                       filter === 'medium'
-                        ? 'bg-white text-gray-900 shadow-sm'
+                        ? 'bg-dark-900 text-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -326,9 +358,9 @@ export function HomePage() {
                   </button>
                   <button
                     onClick={() => setFilter('hard')}
-                    className={`px-4 py-2 rounded-[8px] text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                       filter === 'hard'
-                        ? 'bg-white text-gray-900 shadow-sm'
+                        ? 'bg-dark-900 text-white shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -344,6 +376,7 @@ export function HomePage() {
           
           <RouteList filter={filter} />
         </div>
+        </SectionReveal>
       </section>
     </div>
   )

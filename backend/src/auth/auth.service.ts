@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -91,6 +91,7 @@ export class AuthService {
         id: true,
         email: true,
         name: true,
+        monthlyGoalKm: true,
         createdAt: true,
       },
     });
@@ -119,11 +120,13 @@ export class AuthService {
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.email && { email: dto.email }),
+        ...(dto.monthlyGoalKm != null && { monthlyGoalKm: dto.monthlyGoalKm }),
       },
       select: {
         id: true,
         email: true,
         name: true,
+        monthlyGoalKm: true,
         createdAt: true,
       },
     });

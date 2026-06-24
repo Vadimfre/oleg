@@ -1,4 +1,4 @@
-import { API_URL } from '@/shared/config/env'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface RateRouteData {
   rating: number

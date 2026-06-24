@@ -1,25 +1,18 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, LayersControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import { parseTrackFile, type ParsedTrack } from '@/shared/utils/trackParser'
+import { fixLeafletIcons } from '@/shared/lib/map/leaflet-utils'
 import { grodnoRoutes } from '@/shared/data/grodnoRoutes'
-import { getRouteCoordinates } from '@/shared/data/routeCoordinates'
 import { RoutePolyline } from '@/widgets/MapView/ui/RoutePolyline'
 
-const fixLeafletIcons = () => {
-  // @ts-ignore
-  delete L.Icon.Default.prototype._getIconUrl
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  })
-}
 
-const createIcon = (color: string, label: string) =>
-  L.divIcon({
+// Создание иконок для разных типов точек
+const createIcon = (color: string, label: string) => {
+  return L.divIcon({
     className: 'custom-marker',
     html: `
       <div style="
@@ -46,41 +39,81 @@ const createIcon = (color: string, label: string) =>
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   })
-
-interface StaticRouteMapProps {
-  coordinates?: [number, number][]
-  routeSlug?: string
-  showGrodnoRoutes?: boolean
 }
 
-export function StaticRouteMap({
-  coordinates,
-  routeSlug,
-  showGrodnoRoutes = true,
-}: StaticRouteMapProps) {
-  const track = useMemo(
-    () => getRouteCoordinates(routeSlug, coordinates),
-    [routeSlug, coordinates],
-  )
+interface StaticRouteMapProps {
+  gpxFile?: string // Путь к GPX файлу
+  showGrodnoRoutes?: boolean // Показывать ли маршруты Гродно
+}
 
-  const mapCenter = track[0] ?? ([53.6693, 23.8131] as [number, number])
-  const mapZoom = track.length > 20 ? 11 : track.length > 8 ? 12 : 13
-  const mapInstanceKey = `${routeSlug ?? 'custom'}-${showGrodnoRoutes ? 'on' : 'off'}-${track.length}`
+export function StaticRouteMap({ gpxFile, showGrodnoRoutes = true }: StaticRouteMapProps) {
+  const [gpxTrack, setGpxTrack] = useState<ParsedTrack | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [mapCenter, setMapCenter] = useState<[number, number]>([53.6693, 23.8131])
+  const [mapZoom, setMapZoom] = useState(13)
 
   useEffect(() => {
     fixLeafletIcons()
   }, [])
 
+  // Автоматическая загрузка GPX файла при монтировании
+  useEffect(() => {
+    if (!gpxFile) {
+      setIsLoading(false)
+      return
+    }
+
+    const loadGPX = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(gpxFile)
+        const gpxText = await response.text()
+        const track = parseTrackFile(gpxText, gpxFile.split('/').pop())
+        
+        if (track && track.points.length > 0) {
+          setGpxTrack(track)
+          
+          // Центрируем карту на первой точке маршрута
+          setMapCenter([track.points[0].lat, track.points[0].lng])
+          
+          // Автоматически подбираем зум в зависимости от длины маршрута
+          if (track.distance > 50) {
+            setMapZoom(11)
+          } else if (track.distance > 20) {
+            setMapZoom(12)
+          } else {
+            setMapZoom(13)
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки GPX файла:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadGPX()
+  }, [gpxFile])
+
   return (
     <div className="w-full h-full rounded-3xl overflow-hidden shadow-soft relative">
+      {isLoading && (
+        <div className="absolute inset-0 z-[1000] bg-white/90 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-4xl mb-2 animate-pulse">🗺️</div>
+            <div className="text-dark-600 font-medium">Загрузка маршрута...</div>
+          </div>
+        </div>
+      )}
+
       <MapContainer
-        key={mapInstanceKey}
         center={mapCenter}
         zoom={mapZoom}
         className="w-full h-full"
         zoomControl={true}
       >
         <LayersControl position="topright">
+          {/* Обычная карта OpenStreetMap */}
           <LayersControl.BaseLayer checked name="🗺️ Стандартная">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -88,6 +121,7 @@ export function StaticRouteMap({
             />
           </LayersControl.BaseLayer>
 
+          {/* CyclOSM - карта с велосипедными путями */}
           <LayersControl.BaseLayer name="🚴 Велопути">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -95,6 +129,7 @@ export function StaticRouteMap({
             />
           </LayersControl.BaseLayer>
 
+          {/* Humanitarian карта (хорошо видны дороги) */}
           <LayersControl.BaseLayer name="🛣️ Дороги">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -103,6 +138,7 @@ export function StaticRouteMap({
           </LayersControl.BaseLayer>
         </LayersControl>
 
+        {/* Существующие веломаршруты Гродно */}
         {showGrodnoRoutes && (
           <LayersControl.Overlay name="🚴 Веломаршруты Гродно">
             <>
@@ -124,10 +160,11 @@ export function StaticRouteMap({
           </LayersControl.Overlay>
         )}
 
-        {track.length > 1 && (
+        {/* GPX трек - основной маршрут */}
+        {gpxTrack && (
           <>
             <Polyline
-              positions={track}
+              positions={gpxTrack.points.map((p) => [p.lat, p.lng])}
               color="#ef4444"
               weight={5}
               opacity={0.9}
@@ -135,8 +172,21 @@ export function StaticRouteMap({
               lineCap="round"
               lineJoin="round"
             />
-            <Marker position={track[0]} icon={createIcon('#10b981', '▶')} />
-            <Marker position={track[track.length - 1]} icon={createIcon('#ef4444', '⬛')} />
+
+            {/* Маркер старта */}
+            <Marker
+              position={[gpxTrack.points[0].lat, gpxTrack.points[0].lng]}
+              icon={createIcon('#10b981', '▶')}
+            />
+
+            {/* Маркер финиша */}
+            <Marker
+              position={[
+                gpxTrack.points[gpxTrack.points.length - 1].lat,
+                gpxTrack.points[gpxTrack.points.length - 1].lng,
+              ]}
+              icon={createIcon('#ef4444', '⬛')}
+            />
           </>
         )}
       </MapContainer>

@@ -51,7 +51,16 @@ const config: Config = {
         'soft': '0 2px 15px rgba(0, 0, 0, 0.08)',
         'medium': '0 4px 25px rgba(0, 0, 0, 0.12)',
         'hard': '0 10px 40px rgba(0, 0, 0, 0.15)',
-      }
+        'glow': '0 0 40px rgba(255, 204, 0, 0.25)',
+        'glow-blue': '0 0 40px rgba(59, 130, 246, 0.2)',
+      },
+      animation: {
+        float: 'float 8s ease-in-out infinite',
+        shimmer: 'shimmer 3s linear infinite',
+      },
+      backgroundImage: {
+        'mesh': 'radial-gradient(at 40% 20%, rgba(255,204,0,0.15) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(59,130,246,0.1) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(255,204,0,0.08) 0px, transparent 50%)',
+      },
     },
   },
   plugins: [],

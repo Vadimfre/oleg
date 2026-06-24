@@ -13,11 +13,7 @@ export const useRoutes = (filters?: RouteFilters) => {
     const fetchRoutes = async () => {
       try {
         setIsLoading(true);
-        const data = await getAllRoutes({
-          difficulty: filters?.difficulty,
-          q: filters?.q,
-          sort: filters?.sort,
-        });
+        const data = await getAllRoutes(filters?.difficulty);
         setRoutes(data);
         setError(null);
       } catch (err) {
@@ -28,7 +24,7 @@ export const useRoutes = (filters?: RouteFilters) => {
     };
 
     fetchRoutes();
-  }, [filters?.difficulty, filters?.q, filters?.sort]);
+  }, [filters?.difficulty]);
 
   return {
     routes,
