@@ -10,6 +10,7 @@ export interface RouteResponse {
   distance: number;
   duration: number;
   elevation: number;
+  coordinates?: string;
   gpxFile: string;
   imageUrl: string;
   highlights: string[];

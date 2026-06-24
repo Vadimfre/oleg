@@ -7,6 +7,10 @@ import Link from 'next/link'
 import { Card } from '@/shared/ui'
 import { useRoutes } from '@/features/routes'
 import { WeatherCard, RideReadinessPanel } from '@/features/weather'
+import {
+  parseRouteCoordinates,
+  resolveRouteGpxFile,
+} from '@/shared/lib/route/resolveRouteTrack'
 
 const LiveNavigationMap = dynamic(
   () =>
@@ -32,6 +36,10 @@ function NavigatePageContent() {
   }, [slugFromUrl])
 
   const selectedRoute = routes.find((r) => r.slug === selectedSlug) ?? routes[0]
+  const trackGpx = selectedRoute ? resolveRouteGpxFile(selectedRoute) : undefined
+  const trackCoords = selectedRoute
+    ? parseRouteCoordinates(selectedRoute.coordinates)
+    : []
 
   return (
     <div className="container mx-auto px-4 space-y-6 pb-12">
@@ -109,11 +117,12 @@ function NavigatePageContent() {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="h-[min(70vh,600px)]">
-            {selectedRoute?.gpxFile && (
+          <div className="h-[min(70vh,600px)] min-h-[360px]">
+            {selectedRoute && (
               <LiveNavigationMap
                 key={selectedRoute.slug}
-                gpxFile={selectedRoute.gpxFile}
+                gpxFile={trackGpx}
+                coordinates={trackCoords}
                 className="w-full h-full"
               />
             )}

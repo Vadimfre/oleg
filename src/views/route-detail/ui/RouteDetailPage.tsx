@@ -10,6 +10,10 @@ import { RatingModal, rateRoute } from '@/features/ratings'
 import { CommentsSection } from '@/features/comments'
 import { showToast, showAuthRequiredToast } from '@/shared/ui/Toast'
 import { WeatherCard } from '@/features/weather'
+import {
+  parseRouteCoordinates,
+  resolveRouteGpxFile,
+} from '@/shared/lib/route/resolveRouteTrack'
 
 const StaticRouteMap = dynamic(
   () => import('@/widgets/StaticRouteMap').then((m) => m.StaticRouteMap),
@@ -362,8 +366,11 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
           {/* Карта */}
           <div className="lg:col-span-2 bg-white rounded-[12px] border border-gray-100 overflow-hidden">
-            <div className="h-[500px]">
-              <StaticRouteMap gpxFile={route.gpxFile} />
+            <div className="map-panel min-h-[320px]">
+              <StaticRouteMap
+                gpxFile={resolveRouteGpxFile(route)}
+                coordinates={parseRouteCoordinates(route.coordinates)}
+              />
             </div>
           </div>
 

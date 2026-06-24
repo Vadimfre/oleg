@@ -42,11 +42,25 @@ const createIcon = (color: string, label: string) => {
 }
 
 interface StaticRouteMapProps {
-  gpxFile?: string // Путь к GPX файлу
-  showGrodnoRoutes?: boolean // Показывать ли маршруты Гродно
+  gpxFile?: string
+  coordinates?: [number, number][]
+  showGrodnoRoutes?: boolean
 }
 
-export function StaticRouteMap({ gpxFile, showGrodnoRoutes = true }: StaticRouteMapProps) {
+function trackFromCoordinates(points: [number, number][]): ParsedTrack | null {
+  if (points.length < 2) return null
+  return {
+    name: 'Маршрут',
+    points: points.map(([lat, lng]) => ({ lat, lng })),
+    distance: 0,
+  }
+}
+
+export function StaticRouteMap({
+  gpxFile,
+  coordinates = [],
+  showGrodnoRoutes = true,
+}: StaticRouteMapProps) {
   const [gpxTrack, setGpxTrack] = useState<ParsedTrack | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mapCenter, setMapCenter] = useState<[number, number]>([53.6693, 23.8131])
@@ -56,9 +70,14 @@ export function StaticRouteMap({ gpxFile, showGrodnoRoutes = true }: StaticRoute
     fixLeafletIcons()
   }, [])
 
-  // Автоматическая загрузка GPX файла при монтировании
   useEffect(() => {
-    if (!gpxFile) {
+    const coordTrack = trackFromCoordinates(coordinates)
+    if (!gpxFile?.trim()) {
+      if (coordTrack) {
+        setGpxTrack(coordTrack)
+        setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
+        setMapZoom(13)
+      }
       setIsLoading(false)
       return
     }
@@ -67,36 +86,37 @@ export function StaticRouteMap({ gpxFile, showGrodnoRoutes = true }: StaticRoute
       try {
         setIsLoading(true)
         const response = await fetch(gpxFile)
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const gpxText = await response.text()
         const track = parseTrackFile(gpxText, gpxFile.split('/').pop())
-        
+
         if (track && track.points.length > 0) {
           setGpxTrack(track)
-          
-          // Центрируем карту на первой точке маршрута
           setMapCenter([track.points[0].lat, track.points[0].lng])
-          
-          // Автоматически подбираем зум в зависимости от длины маршрута
-          if (track.distance > 50) {
-            setMapZoom(11)
-          } else if (track.distance > 20) {
-            setMapZoom(12)
-          } else {
-            setMapZoom(13)
-          }
+          if (track.distance > 50) setMapZoom(11)
+          else if (track.distance > 20) setMapZoom(12)
+          else setMapZoom(13)
+        } else if (coordTrack) {
+          setGpxTrack(coordTrack)
+          setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
+          setMapZoom(13)
         }
       } catch (error) {
         console.error('Ошибка загрузки GPX файла:', error)
+        if (coordTrack) {
+          setGpxTrack(coordTrack)
+          setMapCenter([coordTrack.points[0].lat, coordTrack.points[0].lng])
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     loadGPX()
-  }, [gpxFile])
+  }, [gpxFile, coordinates])
 
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden shadow-soft relative">
+    <div className="w-full h-full rounded-3xl overflow-hidden shadow-soft relative min-h-[320px]">
       {isLoading && (
         <div className="absolute inset-0 z-[1000] bg-white/90 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center">
@@ -110,6 +130,7 @@ export function StaticRouteMap({ gpxFile, showGrodnoRoutes = true }: StaticRoute
         center={mapCenter}
         zoom={mapZoom}
         className="w-full h-full"
+        style={{ height: '100%', minHeight: '320px' }}
         zoomControl={true}
       >
         <LayersControl position="topright">

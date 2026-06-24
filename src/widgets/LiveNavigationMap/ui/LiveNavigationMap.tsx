@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -15,12 +15,36 @@ import { parseTrackFile, type ParsedTrack } from '@/shared/utils/trackParser'
 import { formatDistance } from '@/shared/lib/map/geo-utils'
 
 interface LiveNavigationMapProps {
-  gpxFile: string
+  gpxFile?: string
+  coordinates?: [number, number][]
   className?: string
+}
+
+function trackFromCoordinates(points: [number, number][]): ParsedTrack | null {
+  if (points.length < 2) return null
+  let distance = 0
+  for (let i = 1; i < points.length; i++) {
+    const [lat1, lng1] = points[i - 1]
+    const [lat2, lng2] = points[i]
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLng = ((lng2 - lng1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2
+    distance += 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
+  return {
+    name: 'Маршрут',
+    points: points.map(([lat, lng]) => ({ lat, lng })),
+    distance,
+  }
 }
 
 export function LiveNavigationMap({
   gpxFile,
+  coordinates = [],
   className = 'w-full h-full',
 }: LiveNavigationMapProps) {
   const [track, setTrack] = useState<ParsedTrack | null>(null)
@@ -28,39 +52,63 @@ export function LiveNavigationMap({
   const [mapCenter, setMapCenter] = useState<[number, number]>(GRODNO_CENTER)
   const [mapZoom, setMapZoom] = useState(13)
 
+  const coordTrack = useMemo(
+    () => trackFromCoordinates(coordinates),
+    [coordinates],
+  )
+
   useEffect(() => {
     fixLeafletIcons()
   }, [])
 
   useEffect(() => {
-    if (!gpxFile) {
+    let cancelled = false
+
+    const applyTrack = (parsed: ParsedTrack | null) => {
+      if (cancelled) return
+      setTrack(parsed)
+      if (parsed?.points.length) {
+        setMapCenter([parsed.points[0].lat, parsed.points[0].lng])
+        setMapZoom(parsed.distance > 50 ? 11 : parsed.distance > 20 ? 12 : 13)
+      }
       setIsLoadingTrack(false)
-      return
     }
 
     const load = async () => {
-      try {
-        setIsLoadingTrack(true)
-        const res = await fetch(gpxFile)
-        const text = await res.text()
-        const parsed = parseTrackFile(text, gpxFile.split('/').pop())
-        if (parsed?.points.length) {
-          setTrack(parsed)
-          setMapCenter([parsed.points[0].lat, parsed.points[0].lng])
-          setMapZoom(parsed.distance > 50 ? 11 : parsed.distance > 20 ? 12 : 13)
+      setIsLoadingTrack(true)
+
+      if (gpxFile?.trim()) {
+        try {
+          const res = await fetch(gpxFile)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const text = await res.text()
+          const parsed = parseTrackFile(text, gpxFile.split('/').pop())
+          if (parsed?.points.length) {
+            applyTrack(parsed)
+            return
+          }
+        } catch (e) {
+          console.error('Ошибка загрузки трека:', e)
         }
-      } catch (e) {
-        console.error('Ошибка загрузки трека:', e)
-      } finally {
-        setIsLoadingTrack(false)
       }
+
+      applyTrack(coordTrack)
     }
 
     load()
-  }, [gpxFile])
+
+    return () => {
+      cancelled = true
+    }
+  }, [gpxFile, coordTrack])
+
+  const hasTrack = track && track.points.length > 0
 
   return (
-    <div className={`${className} rounded-3xl overflow-hidden shadow-soft relative`}>
+    <div
+      className={`${className} rounded-3xl overflow-hidden shadow-soft relative min-h-[320px]`}
+      style={{ minHeight: '320px' }}
+    >
       {isLoadingTrack && (
         <div className="absolute inset-0 z-[1000] bg-white/90 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center px-4">
@@ -70,7 +118,15 @@ export function LiveNavigationMap({
         </div>
       )}
 
-      {track && (
+      {!isLoadingTrack && !hasTrack && (
+        <div className="absolute inset-0 z-[1000] bg-gray-50 flex items-center justify-center px-6 text-center">
+          <p className="text-gray-500 text-sm">
+            Трек маршрута не найден. Проверьте GPX-файл или координаты в админке.
+          </p>
+        </div>
+      )}
+
+      {hasTrack && (
         <div className="absolute top-4 left-4 z-[1000] max-w-[280px] bg-white/95 backdrop-blur rounded-xl shadow-lg px-3 py-2 text-xs text-gray-700 border border-gray-200">
           <div className="font-bold text-gray-900">Маршрут на карте</div>
           <div>Длина: {formatDistance(track.distance)}</div>
@@ -78,7 +134,12 @@ export function LiveNavigationMap({
         </div>
       )}
 
-      <MapContainer center={mapCenter} zoom={mapZoom} className="w-full h-full">
+      <MapContainer
+        center={mapCenter}
+        zoom={mapZoom}
+        className="w-full h-full"
+        style={{ height: '100%', minHeight: '320px' }}
+      >
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="Стандартная">
             <TileLayer
@@ -94,7 +155,7 @@ export function LiveNavigationMap({
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        {track && track.points.length > 0 && (
+        {hasTrack && (
           <>
             <Polyline
               positions={track.points.map((p) => [p.lat, p.lng] as [number, number])}

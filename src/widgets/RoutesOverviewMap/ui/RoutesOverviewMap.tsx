@@ -17,6 +17,10 @@ import { fixLeafletIcons, GRODNO_CENTER } from '@/shared/lib/map/leaflet-utils'
 import { formatDistance } from '@/shared/lib/map/geo-utils'
 import { parseTrackFile, type ParsedTrack } from '@/shared/utils/trackParser'
 import type { RouteResponse } from '@/shared/api/routes.api'
+import {
+  parseRouteCoordinates,
+  resolveRouteGpxFile,
+} from '@/shared/lib/route/resolveRouteTrack'
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   easy: '#10b981',
@@ -78,20 +82,36 @@ export function RoutesOverviewMap({ routes, className = 'w-full h-full' }: Route
       const results: LoadedRouteTrack[] = []
 
       for (const route of routes) {
-        if (!route.gpxFile) continue
-        try {
-          const res = await fetch(route.gpxFile)
-          const text = await res.text()
-          const track = parseTrackFile(text, route.gpxFile.split('/').pop())
-          if (track?.points.length) {
-            results.push({
-              route,
-              track,
-              color: DIFFICULTY_COLORS[route.difficulty] ?? '#3b82f6',
-            })
+        const gpxFile = resolveRouteGpxFile(route)
+        const coords = parseRouteCoordinates(route.coordinates)
+        let track: ParsedTrack | null = null
+
+        if (gpxFile) {
+          try {
+            const res = await fetch(gpxFile)
+            if (res.ok) {
+              const text = await res.text()
+              track = parseTrackFile(text, gpxFile.split('/').pop())
+            }
+          } catch (e) {
+            console.error(`Не удалось загрузить ${route.slug}:`, e)
           }
-        } catch (e) {
-          console.error(`Не удалось загрузить ${route.slug}:`, e)
+        }
+
+        if (!track?.points.length && coords.length >= 2) {
+          track = {
+            name: route.title,
+            points: coords.map(([lat, lng]) => ({ lat, lng })),
+            distance: route.distance,
+          }
+        }
+
+        if (track?.points.length) {
+          results.push({
+            route,
+            track,
+            color: DIFFICULTY_COLORS[route.difficulty] ?? '#3b82f6',
+          })
         }
       }
 
