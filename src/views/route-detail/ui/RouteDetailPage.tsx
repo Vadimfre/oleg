@@ -75,12 +75,8 @@ export function RouteDetailPage({ slug }: RouteDetailPageProps) {
         '/images/routes/dlinnyj-marshrut/slide-2.png',
         '/images/routes/dlinnyj-marshrut/slide-3.png',
       ],
-      'pokatushka': [
-        '/images/routes/pokatushka.png',
-        '/images/routes/pokatushka/slide-1.png',
-        '/images/routes/pokatushka/slide-2.png',
-        '/images/routes/pokatushka/slide-3.png',
-        '/images/routes/pokatushka/slide-4.png',
+      'grodno-korobchitsy': [
+        '/images/routes/grodno-korobchitsy.png',
       ],
     }
 

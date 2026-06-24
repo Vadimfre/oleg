@@ -26,7 +26,7 @@ type DifficultyKey = keyof typeof difficultyConfig
 
 export function RouteComparePage() {
   const { routes, isLoading } = useRoutes()
-  const [slugA, setSlugA] = useState('pokatushka')
+  const [slugA, setSlugA] = useState('grodno-korobchitsy')
   const [slugB, setSlugB] = useState('grodno-losevo')
 
   const a = routes.find((r) => r.slug === slugA)

@@ -8,7 +8,7 @@ export const ROUTE_TRACK_BY_SLUG: Record<string, string> = {
   'grodno-losevo': '/gpx/grodno-losevo.gpx',
   'grodno-minsk': '/gpx/grodno-minsk.gpx',
   'dlinnyj-marshrut': '/gpx/Long-bike.gpx',
-  pokatushka: '/gpx/pokatushka.gpx',
+  'grodno-korobchitsy': '/gpx/grodno-korobchitsy.gpx',
 }
 
 /** GPX/KML путь: сначала канонический по slug, затем из API */
