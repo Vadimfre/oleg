@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { ROUTE_COORDINATES_BY_SLUG } from '../src/data/route-coordinates';
 
 const prisma = new PrismaClient();
 
@@ -162,6 +163,9 @@ async function main() {
   console.log('✅ Старые маршруты удалены');
 
   for (const route of ROUTES_SEED_DATA) {
+    const coordinates = JSON.stringify(
+      ROUTE_COORDINATES_BY_SLUG[route.slug] ?? [[53.6693, 23.8131]],
+    );
     await prisma.route.upsert({
       where: { slug: route.slug },
       update: {
@@ -171,11 +175,12 @@ async function main() {
         distance: route.distance,
         duration: route.duration,
         elevation: route.elevation,
+        coordinates,
         gpxFile: route.gpxFile,
         imageUrl: route.imageUrl,
         highlights: route.highlights,
       },
-      create: route,
+      create: { ...route, coordinates },
     });
     console.log(`✅ Маршрут: ${route.title}`);
   }
