@@ -12,7 +12,6 @@ import {
   type AdminRating,
   type AdminRoute,
   type AdminStats,
-  type AdminSubscriber,
   type AdminUser,
 } from '@/shared/api/admin.api'
 
@@ -34,7 +33,7 @@ const ADMIN_KEY_STORAGE = 'oleg_admin_api_key'
 const inputClass =
   'w-full rounded-lg border border-gray-200 px-3 py-2.5 text-[15px] text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900'
 
-type Tab = 'create' | 'routes' | 'comments' | 'ratings' | 'users' | 'subscribers'
+type Tab = 'create' | 'routes' | 'comments' | 'ratings' | 'users'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'create', label: 'Создать маршрут' },
@@ -42,7 +41,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'comments', label: 'Комментарии' },
   { id: 'ratings', label: 'Оценки' },
   { id: 'users', label: 'Пользователи' },
-  { id: 'subscribers', label: 'Подписчики' },
 ]
 
 const labelStyle: CSSProperties = { fontWeight: 600, fontSize: 13, marginBottom: 6 }
@@ -95,7 +93,6 @@ export function AdminPage() {
   const [comments, setComments] = useState<AdminComment[]>([])
   const [ratings, setRatings] = useState<AdminRating[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [subscribers, setSubscribers] = useState<AdminSubscriber[]>([])
 
   const [filterRouteId, setFilterRouteId] = useState('')
 
@@ -152,8 +149,6 @@ export function AdminPage() {
         setRatings(await adminApi.listRatings(adminKey, filterRouteId))
       } else if (tab === 'users') {
         setUsers(await adminApi.listUsers(adminKey))
-      } else if (tab === 'subscribers') {
-        setSubscribers(await adminApi.listSubscribers(adminKey))
       }
     } catch (err) {
       setMessage({ type: 'err', text: err instanceof Error ? err.message : 'Ошибка загрузки' })
@@ -276,7 +271,6 @@ export function AdminPage() {
               ['Комментарии', stats.comments],
               ['Оценки', stats.ratings],
               ['Пользователи', stats.users],
-              ['Email', stats.subscribers],
             ].map(([label, count]) => (
               <span key={String(label)} className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">
                 {label}: <strong>{count}</strong>
@@ -543,34 +537,6 @@ export function AdminPage() {
                     onClick={() =>
                       void handleDelete(`пользователя ${u.email}`, () =>
                         adminApi.deleteUser(adminKey, u.id),
-                      )
-                    }
-                  >
-                    Удалить
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </AdminTable>
-        </Card>
-      )}
-
-      {tab === 'subscribers' && (
-        <Card hover={false}>
-          <AdminTable headers={['ID', 'Email', 'Активен', 'Подписан', '']} empty={subscribers.length === 0}>
-            {subscribers.map((s) => (
-              <tr key={s.id} className="border-b border-gray-50">
-                <td className="py-3 pr-4">{s.id}</td>
-                <td className="py-3 pr-4">{s.email}</td>
-                <td className="py-3 pr-4">{s.active ? 'да' : 'нет'}</td>
-                <td className="py-3 pr-4 text-gray-500">{fmtDate(s.createdAt)}</td>
-                <td className="py-3">
-                  <button
-                    type="button"
-                    className="text-red-600 text-sm font-semibold hover:underline"
-                    onClick={() =>
-                      void handleDelete(`подписчика ${s.email}`, () =>
-                        adminApi.deleteSubscriber(adminKey, s.id),
                       )
                     }
                   >
