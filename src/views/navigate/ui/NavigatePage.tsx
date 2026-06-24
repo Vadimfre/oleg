@@ -27,7 +27,7 @@ const LiveNavigationMap = dynamic(
 
 function NavigatePageContent() {
   const searchParams = useSearchParams()
-  const slugFromUrl = searchParams.get('slug') || 'pokatushka'
+  const slugFromUrl = searchParams.get('slug') || 'pyshki'
   const { routes, isLoading: routesLoading } = useRoutes()
   const [selectedSlug, setSelectedSlug] = useState(slugFromUrl)
 

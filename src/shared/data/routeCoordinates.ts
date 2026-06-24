@@ -20,7 +20,7 @@ export const ROUTE_COORDINATES_BY_SLUG: Record<string, [number, number][]> = {
     [53.9000, 27.5500],
   ],
   'dlinnyj-marshrut': fromGrodno('rumlevskoe-lake'),
-  pokatushka: fromGrodno('health-trail'),
+  'grodno-korobchitsy': fromGrodno('grodno-korobchitsy'),
 }
 
 export function getRouteCoordinates(
