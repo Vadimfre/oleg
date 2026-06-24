@@ -1,7 +1,7 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useState, useRef } from 'react'
-import { StaticRouteMap } from '@/widgets/StaticRouteMap'
 import Link from 'next/link'
 import { useAuth } from '@/features/auth'
 import { useRoute } from '@/features/routes'
@@ -10,6 +10,18 @@ import { RatingModal, rateRoute } from '@/features/ratings'
 import { CommentsSection } from '@/features/comments'
 import { showToast, showAuthRequiredToast } from '@/shared/ui/Toast'
 import { WeatherCard } from '@/features/weather'
+
+const StaticRouteMap = dynamic(
+  () => import('@/widgets/StaticRouteMap').then((m) => m.StaticRouteMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full min-h-[320px] flex items-center justify-center bg-gray-50 text-gray-500 rounded-2xl">
+        Загрузка карты…
+      </div>
+    ),
+  },
+)
 
 interface RouteDetailPageProps {
   slug: string

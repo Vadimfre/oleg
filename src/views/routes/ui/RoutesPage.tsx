@@ -1,10 +1,22 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { RouteList } from '@/widgets/RouteList'
 import { Button, Card } from '@/shared/ui'
 import Link from 'next/link'
-import { MapView } from '@/widgets/MapView'
+
+const MapView = dynamic(
+  () => import('@/widgets/MapView').then((m) => m.MapView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-gray-50 text-gray-500 rounded-3xl">
+        Загрузка карты…
+      </div>
+    ),
+  },
+)
 
 export function RoutesPage() {
   const [showMap, setShowMap] = useState(true)

@@ -1,8 +1,20 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Button, Card } from '@/shared/ui'
-import { RouteBuilderMap } from '@/widgets/RouteBuilderMap'
+
+const RouteBuilderMap = dynamic(
+  () => import('@/widgets/RouteBuilderMap').then((m) => m.RouteBuilderMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-500 rounded-3xl">
+        Загрузка карты…
+      </div>
+    ),
+  },
+)
 
 interface RoutePoint {
   lat: number
